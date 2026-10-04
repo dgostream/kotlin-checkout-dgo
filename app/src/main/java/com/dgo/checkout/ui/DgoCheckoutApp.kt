@@ -93,7 +93,6 @@ fun DgoCheckoutApp(vm: CheckoutViewModel) {
                 .align(Alignment.BottomStart)
                 .navigationBarsPadding()
                 .padding(
-                    start = 12.dp,
                     bottom = when {
                         vm.screen == Screen.HOME -> 78.dp
                         vm.screen == Screen.CHECKOUT && vm.step < 2 -> 84.dp
