@@ -1,4 +1,4 @@
-package com.dgo.checkout.ui.screens
+﻿package com.dgo.checkout.ui.screens
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -34,6 +33,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -51,7 +51,6 @@ import com.dgo.checkout.ui.components.BrandButton
 import com.dgo.checkout.ui.components.CouponField
 import com.dgo.checkout.ui.components.GhostField
 import com.dgo.checkout.ui.components.RadioDot
-import com.dgo.checkout.ui.theme.BrandPink
 import com.dgo.checkout.ui.theme.Danger
 import com.dgo.checkout.ui.theme.Ink
 import com.dgo.checkout.ui.theme.StripePurple
@@ -84,14 +83,7 @@ private fun PayCard(content: @Composable ColumnScope.() -> Unit) {
             .fillMaxWidth()
             .clip(shape)
             .border(1.dp, White.copy(0.12f), shape)
-            .background(Ink)
-            .background(
-                Brush.verticalGradient(
-                    0f to StripePurple.copy(0.16f),
-                    0.35f to BrandPink.copy(0.04f),
-                    1f to Color.Transparent,
-                ),
-            ),
+            .background(Ink),
     ) {
         Column(Modifier.padding(20.dp), content = content)
     }
@@ -238,95 +230,128 @@ private fun StripeHostedCheckout(vm: CheckoutViewModel, title: String) {
     val current = vm.session
     val kind = vm.planChange?.kind
     val newSubscription = kind == null || kind == PlanChangeKind.NEW
+    val money = due.startsWith("$") || due.startsWith("रू")
+
     PayCard {
-        Text("DUE TODAY", color = White.copy(0.35f), fontSize = 10.sp, fontWeight = FontWeight.Black, letterSpacing = 1.8.sp)
-        Row(verticalAlignment = Alignment.Bottom) {
-            Text(due, color = White, fontSize = if (due.startsWith("$") || due.startsWith("रू")) 30.sp else 22.sp, fontWeight = FontWeight.Black)
-            if (newSubscription && vm.coupon != null) {
-                Spacer(Modifier.width(8.dp))
-                Text(
-                    formatMoney(vm.amount, currency),
-                    color = White.copy(0.30f),
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold,
-                    textDecoration = TextDecoration.LineThrough,
-                )
-            }
-        }
-        Text(title, color = White.copy(0.80f), fontSize = 14.sp, fontWeight = FontWeight.Bold)
-        Text(
-            sku?.let { billingCadenceLabel(it.duration, it.region) } ?: "One-time payment",
-            color = White.copy(0.40f),
-            fontSize = 12.sp,
-        )
-        if (current != null && kind != null && kind != PlanChangeKind.NEW) {
-            Spacer(Modifier.height(12.dp))
-            Text(
-                lifecycleNote(current, vm.planChange),
-                color = White.copy(0.50f),
-                fontSize = 12.sp,
-                lineHeight = 17.sp,
-            )
-        }
-        if (newSubscription) {
-            Spacer(Modifier.height(16.dp))
-            CouponField(vm.coupon, vm::applyCoupon, vm::clearCoupon, label = "PROMO CODE")
-            if (vm.coupon == null) {
-                Spacer(Modifier.height(6.dp))
-                Text("Optional — or add it on Stripe.", color = White.copy(0.35f), fontSize = 11.sp)
-            }
-        }
-        Spacer(Modifier.height(20.dp))
-        Text("PAY WITH", color = White.copy(0.35f), fontSize = 10.sp, fontWeight = FontWeight.Black, letterSpacing = 1.8.sp)
-        Spacer(Modifier.height(8.dp))
-        val rowShape = RoundedCornerShape(12.dp)
-        Row(
-            Modifier
-                .fillMaxWidth()
-                .clip(rowShape)
-                .border(1.dp, StripePurple.copy(0.45f), rowShape)
-                .background(StripePurple.copy(0.12f))
-                .padding(horizontal = 12.dp, vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            RadioDot(true, StripePurple)
-            Spacer(Modifier.width(10.dp))
+        Text("ORDER SUMMARY", color = White.copy(0.35f), fontSize = 10.sp, fontWeight = FontWeight.Black, letterSpacing = 1.8.sp)
+        Spacer(Modifier.height(10.dp))
+        Row(verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f)) {
-                Text("Stripe Checkout", color = White, fontSize = 14.sp, fontWeight = FontWeight.Bold)
+                Text(title, color = White, fontSize = 15.sp, fontWeight = FontWeight.Bold)
                 Text(
-                    if (newSubscription) "Card, Apple Pay, Google Pay & more" else "Confirm the change on Stripe",
+                    sku?.let { billingCadenceLabel(it.duration, it.region) } ?: "",
                     color = White.copy(0.45f),
-                    fontSize = 11.sp,
-                    lineHeight = 15.sp,
+                    fontSize = 12.sp,
                 )
             }
-            Spacer(Modifier.width(8.dp))
-            Badge("stripe")
+            if (sku != null && newSubscription) {
+                Text(formatMoney(vm.amount, currency), color = White.copy(0.70f), fontSize = 14.sp, fontWeight = FontWeight.Bold)
+            }
         }
-        vm.paymentError?.let {
+        if (current != null && !newSubscription) {
             Spacer(Modifier.height(10.dp))
-            ErrorBanner(it)
+            Text(lifecycleNote(current, vm.planChange), color = White.copy(0.50f), fontSize = 12.sp, lineHeight = 17.sp)
+        }
+        if (newSubscription && vm.coupon != null) {
+            Spacer(Modifier.height(8.dp))
+            Row {
+                Text("Promo ${vm.coupon!!.code}", color = Color(0xFF6EE7B7), fontSize = 12.sp, modifier = Modifier.weight(1f))
+                Text("−" + formatMoney(vm.amount - vm.dueAmount, currency), color = Color(0xFF6EE7B7), fontSize = 12.sp, fontWeight = FontWeight.Bold)
+            }
         }
         Spacer(Modifier.height(14.dp))
-        val cta = when (kind) {
-            PlanChangeKind.PROVIDER_DOWNGRADE -> "Schedule in Stripe"
+        Box(Modifier.fillMaxWidth().height(1.dp).background(White.copy(0.08f)))
+        Spacer(Modifier.height(14.dp))
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text("Due today", color = White.copy(0.60f), fontSize = 13.sp, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
+            Text(due, color = White, fontSize = if (money) 26.sp else 18.sp, fontWeight = FontWeight.Black)
+        }
+        if (newSubscription) {
+            Spacer(Modifier.height(18.dp))
+            CouponField(vm.coupon, vm::applyCoupon, vm::clearCoupon, label = "PROMO CODE")
+        }
+    }
+
+    Spacer(Modifier.height(12.dp))
+    StripePanel(newSubscription)
+
+    vm.paymentError?.let {
+        Spacer(Modifier.height(10.dp))
+        ErrorBanner(it)
+    }
+    Spacer(Modifier.height(16.dp))
+    BrandButton(
+        label = when (kind) {
+            PlanChangeKind.PROVIDER_DOWNGRADE -> "Schedule on Stripe"
             PlanChangeKind.PROVIDER_UPGRADE -> "Continue to Stripe"
             else -> "Continue to Stripe · $due"
+        },
+        onClick = { vm.submitStripePayment() },
+        modifier = Modifier.fillMaxWidth(),
+        leading = { Icon(Icons.Outlined.Lock, null, tint = White, modifier = Modifier.size(14.dp)) },
+    )
+    Spacer(Modifier.height(10.dp))
+    Text(
+        "Prototype · no live charge",
+        color = White.copy(0.30f),
+        fontSize = 10.sp,
+        modifier = Modifier.fillMaxWidth(),
+        textAlign = TextAlign.Center,
+    )
+}
+
+@Composable
+private fun StripePanel(newSubscription: Boolean) {
+    val shape = RoundedCornerShape(16.dp)
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .clip(shape)
+            .border(1.dp, StripePurple.copy(0.55f), shape)
+            .background(Brush.verticalGradient(listOf(StripePurple.copy(0.22f), StripePurple.copy(0.06f))))
+            .padding(18.dp),
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Column(Modifier.weight(1f)) {
+                Text("SECURE PAYMENT BY", color = White.copy(0.45f), fontSize = 10.sp, fontWeight = FontWeight.Black, letterSpacing = 1.6.sp)
+                Spacer(Modifier.height(6.dp))
+                Image(
+                    painterResource(com.dgo.checkout.R.drawable.stripe_wordmark),
+                    contentDescription = "Stripe",
+                    modifier = Modifier.height(30.dp),
+                )
+            }
+            Icon(Icons.Outlined.Lock, null, tint = StripePurple, modifier = Modifier.size(22.dp))
         }
-        BrandButton(
-            label = cta,
-            onClick = { vm.submitStripePayment() },
-            modifier = Modifier.fillMaxWidth(),
-            leading = { Icon(Icons.Outlined.Lock, null, tint = White, modifier = Modifier.size(14.dp)) },
-        )
-        Spacer(Modifier.height(10.dp))
+        Spacer(Modifier.height(6.dp))
         Text(
-            "Prototype · no live charge",
-            color = White.copy(0.30f),
-            fontSize = 10.sp,
-            modifier = Modifier.align(Alignment.CenterHorizontally),
+            if (newSubscription) "You’ll finish on Stripe’s secure page." else "Confirm the change on Stripe’s secure page.",
+            color = White.copy(0.60f),
+            fontSize = 12.sp,
         )
+        if (newSubscription) {
+            Spacer(Modifier.height(12.dp))
+            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                listOf("Card", "Apple Pay", "Google Pay", "Link").forEach { MethodChip(it) }
+            }
+        }
     }
+}
+
+@Composable
+private fun MethodChip(label: String) {
+    val shape = RoundedCornerShape(50)
+    Text(
+        label,
+        color = White.copy(0.80f),
+        fontSize = 11.sp,
+        fontWeight = FontWeight.Bold,
+        modifier = Modifier
+            .clip(shape)
+            .border(1.dp, White.copy(0.14f), shape)
+            .background(Color.Black.copy(0.25f))
+            .padding(horizontal = 10.dp, vertical = 5.dp),
+    )
 }
 
 @Composable
