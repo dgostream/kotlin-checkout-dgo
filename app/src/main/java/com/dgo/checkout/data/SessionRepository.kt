@@ -45,12 +45,7 @@ class SessionRepository(context: Context) {
 
     fun sessionFromSku(sku: SubscriptionSku): SubscriptionSession {
         val billingMode = if (sku.region.stripe) BillingMode.RECURRING else BillingMode.PREPAID
-        val paidThroughMonths = if (billingMode == BillingMode.PREPAID) {
-            sku.duration.months()
-        } else {
-            if (sku.duration == PlanDuration.M12) 12 else 1
-        }
-        val paidThrough = addUtcMonths(paidThroughMonths)
+        val paidThrough = addUtcMonths(sku.duration.months())
         return SubscriptionSession(
             skuId = sku.id,
             tier = sku.tier,
@@ -91,12 +86,11 @@ class SessionRepository(context: Context) {
             current?.billingMode == BillingMode.PREPAID &&
                 kind in setOf(PlanChangeKind.RENEWAL, PlanChangeKind.IMMEDIATE_EXTENSION) ->
                 next.copy(paidThrough = addMonthsToIso(current.paidThrough, sku.duration.months()))
-            current?.billingMode == BillingMode.RECURRING && kind == PlanChangeKind.PROVIDER_UPGRADE ->
+            current?.billingMode == BillingMode.RECURRING && kind == PlanChangeKind.PROVIDER_UPGRADE &&
+                current.duration == sku.duration ->
                 next.copy(
                     paidThrough = current.paidThrough,
                     nextBillingDate = current.nextBillingDate,
-                    status = SessionStatus.ACTIVE,
-                    pendingPlan = null,
                 )
             else -> next
         }

@@ -25,7 +25,7 @@ The app opens on a mobile landing (home, JioHotstar, OSR, sports, entertainment,
 | USA / Europe / AU / NZ | ZB | USD | $29.99 · Stripe |
 | South East Asia | ZC | USD | $17.99 · Stripe |
 
-1-month plans have no live sports. 3-month Stripe plans collect the discounted monthly rate today and bill monthly for 3 months.
+1-month plans have no live sports. Stripe plans charge the full price each period: monthly, every 3 months (quarterly), or annually.
 
 For the partner implementation guide, see [docs/mobiotics-implementation-guide.md](docs/mobiotics-implementation-guide.md).
 

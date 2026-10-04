@@ -136,17 +136,8 @@ fun billingCadenceLabel(duration: PlanDuration, region: PriceRegion): String {
     if (region == PriceRegion.NEPAL) return "One-time payment"
     return when (duration) {
         PlanDuration.M12 -> "Billed annually"
-        PlanDuration.M03 -> "Monthly · 3 months"
+        PlanDuration.M03 -> "Billed every 3 months"
         PlanDuration.M01 -> "Billed monthly"
-    }
-}
-
-/** Stripe 3-month plans collect the discounted monthly rate today. */
-fun checkoutPriceForSku(sku: SubscriptionSku): Double {
-    return if (sku.region.stripe && sku.duration == PlanDuration.M03) {
-        (sku.price / sku.duration.months()).let { (it * 100).roundToInt() / 100.0 }
-    } else {
-        sku.price
     }
 }
 
@@ -164,7 +155,7 @@ fun savingsVsMonthly(region: PriceRegion, tier: PlanTier, duration: PlanDuration
 
 fun compareAtPrice(region: PriceRegion, tier: PlanTier, duration: PlanDuration): Double {
     val monthly = Catalog.findSku(region, tier, PlanDuration.M01)?.price ?: 0.0
-    return if (region.stripe && duration == PlanDuration.M03) monthly else monthly * duration.months()
+    return monthly * duration.months()
 }
 
 fun applyCouponAmount(amount: Double, currency: Currency, coupon: AppliedCoupon?): Double {

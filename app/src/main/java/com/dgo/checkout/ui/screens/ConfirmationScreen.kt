@@ -159,7 +159,7 @@ fun ConfirmationScreen(vm: CheckoutViewModel) {
                         when (kind) {
                             PlanChangeKind.FIXED_TIER_UPGRADE -> "Access date unchanged"
                             PlanChangeKind.PROVIDER_DOWNGRADE -> "Starts on the next bill"
-                            PlanChangeKind.PROVIDER_UPGRADE -> "Billing date kept"
+                            PlanChangeKind.PROVIDER_UPGRADE -> "Next bill ${formatRenewalDate(vm.session?.nextBillingDate)}"
                             PlanChangeKind.RENEWAL, PlanChangeKind.IMMEDIATE_EXTENSION -> "${sku.duration.label()} added after this term"
                             else -> if (sku.region == com.dgo.checkout.data.PriceRegion.NEPAL) {
                                 "${sku.duration.label()} of access"

@@ -45,7 +45,6 @@ import com.dgo.checkout.data.PlanDuration
 import com.dgo.checkout.data.PlanTier
 import com.dgo.checkout.data.TIER_META
 import com.dgo.checkout.data.billingCadenceLabel
-import com.dgo.checkout.data.checkoutPriceForSku
 import com.dgo.checkout.data.compareAtPrice
 import com.dgo.checkout.data.dueTodayCaption
 import com.dgo.checkout.data.formatMoney
@@ -314,7 +313,7 @@ private fun TierCard(
     val displayAmount = when {
         row == null -> 0.0
         rowChange?.kind == PlanChangeKind.FIXED_TIER_UPGRADE -> rowChange.amount
-        else -> checkoutPriceForSku(row)
+        else -> row.price
     }
     val accent = Color(meta.accent)
     val shape = RoundedCornerShape(28.dp)
@@ -388,8 +387,7 @@ private fun TierCard(
                 PlanChangeKind.RENEWAL -> "+${vm.duration.label()} after this term"
                 PlanChangeKind.IMMEDIATE_EXTENSION -> "Added after this term"
                 else -> listOfNotNull(
-                    row?.takeIf { checkoutPriceForSku(it) > it.price / it.duration.months() + 0.01 }
-                        ?.let { formatMonthlyRate(it) },
+                    row?.takeIf { it.duration != PlanDuration.M01 }?.let { formatMonthlyRate(it) },
                     billingCadenceLabel(vm.duration, vm.region),
                 ).joinToString(" · ")
             },

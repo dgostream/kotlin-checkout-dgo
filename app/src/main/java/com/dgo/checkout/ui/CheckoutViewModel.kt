@@ -21,7 +21,6 @@ import com.dgo.checkout.data.SessionRepository
 import com.dgo.checkout.data.SubscriptionSession
 import com.dgo.checkout.data.SubscriptionSku
 import com.dgo.checkout.data.applyCouponAmount
-import com.dgo.checkout.data.checkoutPriceForSku
 import com.dgo.checkout.data.resolvePlanChange
 
 class CheckoutViewModel(application: Application) : AndroidViewModel(application) {
@@ -72,7 +71,7 @@ class CheckoutViewModel(application: Application) : AndroidViewModel(application
         get() {
             val selected = sku ?: return 0.0
             val change = planChange
-            return if (change?.kind == PlanChangeKind.NEW) checkoutPriceForSku(selected) else change?.amount ?: selected.price
+            return change?.amount ?: selected.price
         }
 
     val dueAmount: Double

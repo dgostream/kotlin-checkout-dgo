@@ -7,7 +7,7 @@ fun resolvePlanChange(
 ): PlanChange? {
     if (target == null) return null
     if (!manageMode || current == null || current.region != target.region) {
-        return PlanChange(PlanChangeKind.NEW, checkoutPriceForSku(target), allowed = true)
+        return PlanChange(PlanChangeKind.NEW, target.price, allowed = true)
     }
     if (current.skuId == target.id) {
         return if (current.billingMode == BillingMode.RECURRING) {
@@ -24,6 +24,7 @@ fun resolvePlanChange(
             kind = if (downgrade) PlanChangeKind.PROVIDER_DOWNGRADE else PlanChangeKind.PROVIDER_UPGRADE,
             amount = target.price,
             allowed = true,
+            intervalChange = target.duration != current.duration,
         )
     }
 
@@ -79,7 +80,11 @@ fun lifecycleNote(
     PlanChangeKind.IMMEDIATE_EXTENSION -> "Added after ${formatRenewalDate(current.paidThrough)}. No auto-renew."
     PlanChangeKind.DEFERRED -> "Available after ${formatRenewalDate(current.paidThrough)}."
     PlanChangeKind.PROVIDER_DOWNGRADE -> "Switches on ${formatRenewalDate(current.nextBillingDate ?: current.paidThrough)}. No charge today."
-    PlanChangeKind.PROVIDER_UPGRADE -> "Starts now. You pay only for the days left until ${formatRenewalDate(current.nextBillingDate)}. Stripe shows the exact amount."
+    PlanChangeKind.PROVIDER_UPGRADE -> if (change.intervalChange) {
+        "Starts now. A new billing period begins today, minus credit for unused time. Stripe shows the exact amount."
+    } else {
+        "Starts now. You pay only for the days left until ${formatRenewalDate(current.nextBillingDate)}. Stripe shows the exact amount."
+    }
     else -> if (current.billingMode == BillingMode.PREPAID) {
         "Access until ${formatRenewalDate(current.paidThrough)}."
     } else {

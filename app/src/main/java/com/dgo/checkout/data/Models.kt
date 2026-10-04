@@ -88,6 +88,7 @@ data class PlanChange(
     val kind: PlanChangeKind,
     val amount: Double,
     val allowed: Boolean,
+    val intervalChange: Boolean = false,
 )
 
 data class CardForm(
