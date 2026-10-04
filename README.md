@@ -8,7 +8,8 @@ The app opens on a mobile landing (home, JioHotstar, OSR, sports, entertainment,
 
 - Plan picker with the same duration tabs (1 / 3 / 12 months) and Mobile / Plus cards
 - Nepal wallet accordion (Khalti, eSewa, ConnectIPS, Fonepay, GetPay)
-- Stripe-style checkout for international zones (card + express methods)
+- Stripe-only checkout for international zones: a hand-off to hosted Stripe Checkout (WebView), no card entry in the app
+- Plan changes (upgrade, downgrade, renewal, extension) and Stripe cancel / resume on the Account screen
 - Confirmation screen, then a subscribed home
 - Prototype coupons `DGO10` / `DGO20` on Nepal checkout
 - Dev overlay, same idea as the web prototype:
@@ -25,6 +26,8 @@ The app opens on a mobile landing (home, JioHotstar, OSR, sports, entertainment,
 | South East Asia | ZC | USD | $17.99 · Stripe |
 
 1-month plans have no live sports. 3-month Stripe plans collect the discounted monthly rate today and bill monthly for 3 months.
+
+For the partner implementation guide, see [docs/mobiotics-implementation-guide.md](docs/mobiotics-implementation-guide.md).
 
 ## Run it
 
