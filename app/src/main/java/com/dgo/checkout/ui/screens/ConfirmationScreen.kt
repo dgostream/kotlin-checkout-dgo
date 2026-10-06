@@ -63,15 +63,21 @@ fun ConfirmationScreen(vm: CheckoutViewModel) {
         }
         vm.goHome()
     }
-    val sku = vm.sku
+    val pass = vm.completedEvent
+    val sku = if (pass == null) vm.sku else null
     val kind = vm.completedKind
-    val title = when (kind) {
-        PlanChangeKind.PROVIDER_DOWNGRADE -> "Plan change scheduled"
-        PlanChangeKind.PROVIDER_UPGRADE, PlanChangeKind.FIXED_TIER_UPGRADE -> "Plan updated"
-        PlanChangeKind.RENEWAL, PlanChangeKind.IMMEDIATE_EXTENSION -> "Time added"
+    val title = when {
+        pass != null -> "Pass unlocked"
+        kind == PlanChangeKind.PROVIDER_DOWNGRADE -> "Plan change scheduled"
+        kind == PlanChangeKind.PROVIDER_UPGRADE || kind == PlanChangeKind.FIXED_TIER_UPGRADE -> "Plan updated"
+        kind == PlanChangeKind.RENEWAL || kind == PlanChangeKind.IMMEDIATE_EXTENSION -> "Time added"
         else -> "You're in"
     }
-    val detail = sku?.let { "${TIER_META.getValue(it.tier).name} · ${it.duration.label()}" } ?: ""
+    val detail = when {
+        pass != null -> "${pass.title} · ${pass.subtitle}"
+        sku != null -> "${TIER_META.getValue(sku.tier).name} · ${sku.duration.label()}"
+        else -> ""
+    }
     val progress by animateFloatAsState(seconds / 10f, animationSpec = tween(900), label = "ring")
 
     Box(
@@ -152,6 +158,10 @@ fun ConfirmationScreen(vm: CheckoutViewModel) {
                 )
                 Box(Modifier.fillMaxWidth().height(1.dp).background(White.copy(0.08f)))
                 ConfirmRow("Payment", vm.lastPaymentLabel)
+                if (pass != null) {
+                    Box(Modifier.fillMaxWidth().height(1.dp).background(White.copy(0.08f)))
+                    ConfirmRow("Access", "Until ${formatRenewalDate(pass.accessUntil)} · no renewal")
+                }
                 if (sku != null) {
                     Box(Modifier.fillMaxWidth().height(1.dp).background(White.copy(0.08f)))
                     ConfirmRow(

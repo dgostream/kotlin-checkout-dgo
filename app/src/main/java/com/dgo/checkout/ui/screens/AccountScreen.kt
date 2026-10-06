@@ -22,6 +22,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Logout
 import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.People
@@ -49,6 +50,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.dgo.checkout.data.BillingMode
 import com.dgo.checkout.data.Catalog
+import com.dgo.checkout.data.EventPass
+import com.dgo.checkout.data.Events
 import com.dgo.checkout.data.SessionStatus
 import com.dgo.checkout.data.TIER_META
 import com.dgo.checkout.data.formatMoney
@@ -149,10 +152,23 @@ fun AccountScreen(vm: CheckoutViewModel) {
             }
             if (vm.plansOpen) {
                 Box(Modifier.fillMaxWidth().height(1.dp).background(White.copy(0.08f)))
-                if (session == null) {
+                val passes = Events.ALL.filter { it.key in vm.ownedPasses }
+                if (session == null && passes.isEmpty()) {
                     Text("No active plans on this account", color = White.copy(0.40f), fontSize = 12.sp, modifier = Modifier.padding(16.dp))
-                } else {
-                    PlanDetails(vm)
+                }
+                if (session != null) PlanDetails(vm)
+                passes.forEach { PassRow(it) }
+                if (vm.exclusiveEnabled) {
+                    Text(
+                        "Browse exclusive events",
+                        color = BrandPurple,
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Black,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { vm.openCheckout(exclusive = true) }
+                            .padding(horizontal = 16.dp, vertical = 14.dp),
+                    )
                 }
             }
             MenuRow(Icons.Outlined.Cast, "TV pairing code") { vm.accountNotice = "TV pairing is in the full app." }
@@ -191,6 +207,38 @@ fun AccountScreen(vm: CheckoutViewModel) {
 }
 
 @Composable
+private fun PassRow(pass: EventPass) {
+    val card = RoundedCornerShape(12.dp)
+    Row(
+        Modifier
+            .padding(start = 12.dp, end = 12.dp, top = 12.dp)
+            .fillMaxWidth()
+            .clip(card)
+            .border(1.dp, White.copy(0.08f), card)
+            .background(White.copy(0.03f))
+            .padding(12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Icon(Icons.Filled.EmojiEvents, null, tint = Color(pass.accent), modifier = Modifier.size(18.dp))
+        Spacer(Modifier.width(10.dp))
+        Column(Modifier.weight(1f)) {
+            Text("${pass.title} · ${pass.subtitle}", color = White, fontWeight = FontWeight.Black, fontSize = 14.sp)
+            Text("One-time pass · Access until ${formatRenewalDate(pass.accessUntil)}", color = White.copy(0.45f), fontSize = 11.sp)
+        }
+        Text(
+            "PASS",
+            color = Color(pass.accent),
+            fontSize = 9.sp,
+            fontWeight = FontWeight.Black,
+            modifier = Modifier
+                .clip(RoundedCornerShape(50))
+                .background(Color(pass.accent).copy(0.14f))
+                .padding(horizontal = 8.dp, vertical = 4.dp),
+        )
+    }
+}
+
+@Composable
 private fun PlanDetails(vm: CheckoutViewModel) {
     val session = vm.session ?: return
     val sku = Catalog.findSku(session.region, session.tier, session.duration)
@@ -215,7 +263,7 @@ private fun PlanDetails(vm: CheckoutViewModel) {
                         )
                     }
                 }
-                val ending = session.status == SessionStatus.CANCELING
+                val ending = session.billingMode == BillingMode.RECURRING && session.status == SessionStatus.CANCELING
                 Text(
                     if (ending) "ENDS SOON" else "ACTIVE",
                     color = if (ending) Color(0xFFFCD34D) else Emerald,
@@ -241,7 +289,7 @@ private fun PlanDetails(vm: CheckoutViewModel) {
                     fontSize = 11.sp,
                 )
             }
-            session.pendingPlan?.let { pending ->
+            if (session.billingMode == BillingMode.RECURRING) session.pendingPlan?.let { pending ->
                 Spacer(Modifier.height(8.dp))
                 Text(
                     "Changes to ${TIER_META.getValue(pending.tier).name} · ${pending.duration.label()} on ${formatRenewalDate(pending.effectiveDate)}",

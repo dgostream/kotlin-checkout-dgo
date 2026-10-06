@@ -48,8 +48,10 @@ private const val AUTO_HIDE_MS = 4000L
 fun DevGeoToggle(
     region: PriceRegion,
     subscribed: Boolean,
+    exclusive: Boolean,
     onRegion: (PriceRegion) -> Unit,
     onSubscribed: (Boolean) -> Unit,
+    onExclusive: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var expanded by remember { mutableStateOf(false) }
@@ -70,16 +72,18 @@ fun DevGeoToggle(
             Panel(
                 region = region,
                 subscribed = subscribed,
+                exclusive = exclusive,
                 onRegion = { touches++; onRegion(it) },
                 onSubscribed = { touches++; onSubscribed(it) },
+                onExclusive = { touches++; onExclusive(it) },
             )
         }
-        Handle(region, subscribed, expanded) { expanded = !expanded }
+        Handle(region, subscribed, exclusive, expanded) { expanded = !expanded }
     }
 }
 
 @Composable
-private fun Handle(region: PriceRegion, subscribed: Boolean, expanded: Boolean, onClick: () -> Unit) {
+private fun Handle(region: PriceRegion, subscribed: Boolean, exclusive: Boolean, expanded: Boolean, onClick: () -> Unit) {
     val shape = RoundedCornerShape(topEnd = 8.dp, bottomEnd = 8.dp)
     Column(
         Modifier
@@ -94,6 +98,9 @@ private fun Handle(region: PriceRegion, subscribed: Boolean, expanded: Boolean, 
         if (!expanded) {
             Text(region.toggleLabel, color = DevLime.copy(0.90f), fontSize = 9.sp, fontWeight = FontWeight.Bold, fontFamily = FontFamily.Monospace)
             Text(if (subscribed) "SUB" else "OFF", color = DevLime.copy(0.60f), fontSize = 8.sp, fontFamily = FontFamily.Monospace)
+            if (exclusive) {
+                Text("PPV", color = DevLime.copy(0.60f), fontSize = 8.sp, fontFamily = FontFamily.Monospace)
+            }
         }
     }
 }
@@ -102,8 +109,10 @@ private fun Handle(region: PriceRegion, subscribed: Boolean, expanded: Boolean, 
 private fun Panel(
     region: PriceRegion,
     subscribed: Boolean,
+    exclusive: Boolean,
     onRegion: (PriceRegion) -> Unit,
     onSubscribed: (Boolean) -> Unit,
+    onExclusive: (Boolean) -> Unit,
 ) {
     Column(
         Modifier
@@ -135,6 +144,8 @@ private fun Panel(
             Box(Modifier.width(1.dp).height(12.dp).background(DevLime.copy(0.25f)))
             DevChip("OFF", selected = !subscribed) { onSubscribed(false) }
             DevChip("SUB", selected = subscribed) { onSubscribed(true) }
+            Box(Modifier.width(1.dp).height(12.dp).background(DevLime.copy(0.25f)))
+            DevChip("PPV", selected = exclusive) { onExclusive(!exclusive) }
         }
     }
 }

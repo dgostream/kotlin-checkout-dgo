@@ -97,6 +97,22 @@ class SessionRepository(context: Context) {
         setSession(updated)
     }
 
+    fun getPasses(): Set<String> = prefs.getStringSet(KEY_PASSES, emptySet()).orEmpty().toSet()
+
+    fun addPass(key: String) {
+        prefs.edit().putStringSet(KEY_PASSES, getPasses() + key).apply()
+    }
+
+    fun clearPasses() {
+        prefs.edit().remove(KEY_PASSES).apply()
+    }
+
+    fun getExclusiveEnabled(): Boolean = prefs.getBoolean(KEY_EXCLUSIVE, true)
+
+    fun setExclusiveEnabled(on: Boolean) {
+        prefs.edit().putBoolean(KEY_EXCLUSIVE, on).apply()
+    }
+
     fun generateOrderRef(): String {
         val hex = List(8) { "0123456789ABCDEF".random() }.joinToString("")
         return "DGO-${hex.take(4)}-${hex.drop(4)}"
@@ -165,6 +181,8 @@ class SessionRepository(context: Context) {
         private const val PREFS = "dgo_checkout"
         private const val KEY_REGION = "dgo_dev_region"
         private const val KEY_SESSION = "dgo_unlock_subscription"
+        private const val KEY_PASSES = "dgo_event_passes"
+        private const val KEY_EXCLUSIVE = "dgo_dev_exclusive"
 
         fun addUtcMonths(months: Int): String {
             return ZonedDateTime.now(ZoneOffset.UTC).plusMonths(months.toLong()).toInstant().toString()

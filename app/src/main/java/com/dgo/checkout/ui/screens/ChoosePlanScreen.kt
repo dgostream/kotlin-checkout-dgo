@@ -29,6 +29,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -61,7 +62,9 @@ import com.dgo.checkout.ui.components.BrandButton
 import com.dgo.checkout.ui.theme.BrandGradient
 import com.dgo.checkout.ui.theme.BrandPurple
 import com.dgo.checkout.ui.theme.Emerald
+import com.dgo.checkout.data.BillingMode
 import com.dgo.checkout.ui.theme.White
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch
 
 @Composable
@@ -87,6 +90,14 @@ fun ChoosePlanScreen(vm: CheckoutViewModel) {
                     .padding(horizontal = 12.dp, vertical = 4.dp),
             ) {
                 Text(vm.region.billedIn, color = White.copy(0.50f), fontSize = 11.sp, fontWeight = FontWeight.SemiBold)
+            }
+            if (vm.exclusiveEnabled) {
+                Spacer(Modifier.height(14.dp))
+                CatalogTabs(vm.catalogTab) { vm.catalogTab = it }
+            }
+            if (vm.buyingEvent) {
+                ExclusiveCatalog(vm)
+                return@Column
             }
             Spacer(Modifier.height(14.dp))
             Text(
@@ -122,7 +133,7 @@ fun ChoosePlanScreen(vm: CheckoutViewModel) {
             Spacer(Modifier.height(18.dp))
             PlanPager(vm)
 
-            if (vm.manageMode && vm.session?.status == SessionStatus.CANCELING) {
+            if (vm.manageMode && vm.session?.billingMode == BillingMode.RECURRING && vm.session?.status == SessionStatus.CANCELING) {
                 Spacer(Modifier.height(12.dp))
                 Text(
                     "Renewal is off. A new plan turns it back on.",
@@ -147,6 +158,10 @@ fun ChoosePlanScreen(vm: CheckoutViewModel) {
             }
         }
 
+        if (vm.buyingEvent) {
+            EventBottomBar(vm)
+            return@Column
+        }
         Row(
             Modifier
                 .fillMaxWidth()
@@ -194,15 +209,19 @@ private fun PlanPager(vm: CheckoutViewModel) {
     val start = tiers.indexOf(vm.tier).coerceAtLeast(0)
     val pagerState = rememberPagerState(initialPage = start, pageCount = { tiers.size })
     val scope = rememberCoroutineScope()
-    LaunchedEffect(pagerState.currentPage) {
-        val next = tiers[pagerState.currentPage]
-        if (vm.tier != next) vm.tier = next
-    }
     LaunchedEffect(vm.tier) {
         val page = tiers.indexOf(vm.tier)
         if (page >= 0 && pagerState.currentPage != page) {
-            pagerState.animateScrollToPage(page)
+            pagerState.scrollToPage(page)
         }
+    }
+    LaunchedEffect(pagerState) {
+        snapshotFlow { pagerState.settledPage }
+            .drop(1)
+            .collect { page ->
+                val next = tiers[page]
+                if (vm.tier != next) vm.tier = next
+            }
     }
     HorizontalPager(
         state = pagerState,

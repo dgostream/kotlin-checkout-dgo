@@ -1,4 +1,4 @@
-package com.dgo.checkout.ui
+﻿package com.dgo.checkout.ui
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.fadeIn
@@ -28,6 +28,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.activity.compose.BackHandler
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.key
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -77,9 +78,10 @@ fun DgoCheckoutApp(vm: CheckoutViewModel) {
                 when {
                     screen == Screen.HOME -> LandingScreen(vm)
                     screen == Screen.ACCOUNT -> AccountScreen(vm)
-                    step == 0 -> ChoosePlanScreen(vm)
-                    step == 1 -> PaymentScreen(vm)
-                    else -> ConfirmationScreen(vm)
+                    step == 2 -> ConfirmationScreen(vm)
+                    else -> key(vm.region, vm.session, vm.manageMode, vm.ownedPasses, vm.catalogTab) {
+                        if (step == 0) ChoosePlanScreen(vm) else PaymentScreen(vm)
+                    }
                 }
             }
         }
@@ -87,8 +89,10 @@ fun DgoCheckoutApp(vm: CheckoutViewModel) {
         DevGeoToggle(
             region = vm.region,
             subscribed = vm.session != null,
+            exclusive = vm.exclusiveEnabled,
             onRegion = vm::setDevRegion,
             onSubscribed = vm::setSubscribed,
+            onExclusive = vm::setExclusive,
             modifier = Modifier
                 .align(Alignment.BottomStart)
                 .navigationBarsPadding()
@@ -128,7 +132,11 @@ private fun CheckoutHeader(vm: CheckoutViewModel) {
             }
             Text(
                 when (vm.step) {
-                    0 -> if (vm.manageMode) "Change plan" else "Choose a plan"
+                    0 -> when {
+                        vm.buyingEvent -> "Exclusive"
+                        vm.manageMode -> "Change plan"
+                        else -> "Choose a plan"
+                    }
                     1 -> "Payment"
                     else -> "Confirmed"
                 },

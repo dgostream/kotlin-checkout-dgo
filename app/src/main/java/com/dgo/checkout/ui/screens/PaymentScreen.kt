@@ -59,7 +59,12 @@ import com.dgo.checkout.ui.theme.White
 @Composable
 fun PaymentScreen(vm: CheckoutViewModel) {
     val sku = vm.sku
-    val title = sku?.let { "${TIER_META.getValue(it.tier).name} · ${it.duration.label()}" } ?: "DGO plan"
+    val event = vm.event
+    val title = when {
+        vm.buyingEvent && event != null -> "${event.title} · ${event.subtitle}"
+        sku != null -> "${TIER_META.getValue(sku.tier).name} · ${sku.duration.label()}"
+        else -> "DGO plan"
+    }
     Column(
         Modifier
             .fillMaxSize()
@@ -105,7 +110,7 @@ private fun NepalCheckout(vm: CheckoutViewModel, title: String) {
         }
         Text(title, color = White.copy(0.80f), fontSize = 14.sp, fontWeight = FontWeight.Bold)
         Text(
-            "Local wallets" + (sku?.let { " · ${billingCadenceLabel(it.duration, it.region)}" } ?: ""),
+            "Local wallets · " + cadenceLabel(vm),
             color = White.copy(0.40f),
             fontSize = 12.sp,
         )
@@ -172,25 +177,6 @@ private fun NepalMethodRow(method: NepalPsp, vm: CheckoutViewModel) {
                 Badge("MC")
             }
         }
-        if (open && method != NepalPsp.GETPAY) {
-            Column(Modifier.padding(start = 12.dp, end = 12.dp, bottom = 12.dp)) {
-                GhostField(
-                    value = vm.mobileNumber,
-                    onValueChange = {
-                        vm.mobileNumber = if (method == NepalPsp.CONNECTIPS) {
-                            it.filter { ch -> ch.isLetterOrDigit() || ch == '/' || ch == '_' || ch == '-' }.take(24)
-                        } else {
-                            it.filter { ch -> ch.isDigit() }.take(14)
-                        }
-                        vm.paymentError = null
-                    },
-                    placeholder = if (method == NepalPsp.CONNECTIPS) "Account / Customer ID" else "98XXXXXXXX",
-                    keyboardType = if (method == NepalPsp.CONNECTIPS) KeyboardType.Text else KeyboardType.Number,
-                )
-                Spacer(Modifier.height(8.dp))
-                Text("Continues in ${method.title}", color = White.copy(0.40f), fontSize = 11.sp)
-            }
-        }
         if (open && method == NepalPsp.GETPAY) {
             CardFields(
                 number = vm.cardForm.number,
@@ -224,8 +210,7 @@ private fun PspMark(method: NepalPsp) {
 
 @Composable
 private fun StripeHostedCheckout(vm: CheckoutViewModel, title: String) {
-    val sku = vm.sku
-    val currency = sku?.currency ?: vm.region.currency
+    val currency = vm.region.currency
     val due = dueTodayCaption(vm.planChange, vm.dueAmount, currency)
     val current = vm.session
     val kind = vm.planChange?.kind
@@ -239,12 +224,12 @@ private fun StripeHostedCheckout(vm: CheckoutViewModel, title: String) {
             Column(Modifier.weight(1f)) {
                 Text(title, color = White, fontSize = 15.sp, fontWeight = FontWeight.Bold)
                 Text(
-                    sku?.let { billingCadenceLabel(it.duration, it.region) } ?: "",
+                    cadenceLabel(vm),
                     color = White.copy(0.45f),
                     fontSize = 12.sp,
                 )
             }
-            if (sku != null && newSubscription) {
+            if (newSubscription) {
                 Text(formatMoney(vm.amount, currency), color = White.copy(0.70f), fontSize = 14.sp, fontWeight = FontWeight.Bold)
             }
         }
@@ -298,6 +283,14 @@ private fun StripeHostedCheckout(vm: CheckoutViewModel, title: String) {
         modifier = Modifier.fillMaxWidth(),
         textAlign = TextAlign.Center,
     )
+}
+
+private fun cadenceLabel(vm: CheckoutViewModel): String {
+    val event = vm.event
+    return when {
+        vm.buyingEvent && event != null -> "One-time pass · until ${formatRenewalDate(event.accessUntil)}"
+        else -> vm.sku?.let { billingCadenceLabel(it.duration, it.region) }.orEmpty()
+    }
 }
 
 @Composable

@@ -1,4 +1,4 @@
-package com.dgo.checkout.ui
+﻿package com.dgo.checkout.ui
 
 import android.app.Application
 import androidx.compose.runtime.getValue
@@ -7,8 +7,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
 import com.dgo.checkout.data.AppliedCoupon
+import com.dgo.checkout.data.BillingMode
 import com.dgo.checkout.data.CardForm
 import com.dgo.checkout.data.Catalog
+import com.dgo.checkout.data.CatalogTab
+import com.dgo.checkout.data.EventPass
+import com.dgo.checkout.data.Events
+import com.dgo.checkout.data.PlanChange
+import com.dgo.checkout.data.passOwnership
 import com.dgo.checkout.data.LandingCatalog
 import com.dgo.checkout.data.NepalPsp
 import com.dgo.checkout.data.TitleCard
@@ -50,7 +56,6 @@ class CheckoutViewModel(application: Application) : AndroidViewModel(application
         private set
 
     var nepalPsp by mutableStateOf<NepalPsp?>(null)
-    var mobileNumber by mutableStateOf("")
     var cardForm by mutableStateOf(CardForm())
     var paymentError by mutableStateOf<String?>(null)
     var coupon by mutableStateOf<AppliedCoupon?>(null)
@@ -60,42 +65,57 @@ class CheckoutViewModel(application: Application) : AndroidViewModel(application
         private set
     var completedKind by mutableStateOf(PlanChangeKind.NEW)
         private set
+    var completedEvent by mutableStateOf<EventPass?>(null)
+        private set
+
+    var exclusiveEnabled by mutableStateOf(repo.getExclusiveEnabled())
+        private set
+    var catalogTab by mutableStateOf(CatalogTab.PLANS)
+    var eventKey by mutableStateOf(Events.ALL.first().key)
+    var ownedPasses by mutableStateOf(repo.getPasses())
+        private set
+
+    val buyingEvent: Boolean
+        get() = exclusiveEnabled && catalogTab == CatalogTab.EXCLUSIVE
+
+    val event: EventPass?
+        get() = Events.find(eventKey)
 
     val sku: SubscriptionSku?
         get() = Catalog.findSku(region, tier, duration)
 
-    val planChange
-        get() = resolvePlanChange(session, sku, manageMode)
+    val planChange: PlanChange?
+        get() = if (buyingEvent) {
+            event?.let { PlanChange(PlanChangeKind.NEW, it.price(region), allowed = passOwnership(it, ownedPasses) == null) }
+        } else {
+            resolvePlanChange(session, sku, manageMode)
+        }
 
     val amount: Double
         get() {
+            if (buyingEvent) return event?.price(region) ?: 0.0
             val selected = sku ?: return 0.0
-            val change = planChange
-            return change?.amount ?: selected.price
+            return planChange?.amount ?: selected.price
         }
 
     val dueAmount: Double
-        get() = applyCouponAmount(amount, sku?.currency ?: region.currency, coupon)
+        get() = applyCouponAmount(amount, region.currency, coupon)
 
     val canAdvanceFromPlan: Boolean
-        get() = sku != null && (planChange?.allowed ?: true)
+        get() = if (buyingEvent) planChange?.allowed == true else sku != null && (planChange?.allowed ?: true)
+
+    fun setExclusive(on: Boolean) {
+        exclusiveEnabled = on
+        repo.setExclusiveEnabled(on)
+        if (!on) catalogTab = CatalogTab.PLANS
+    }
 
     fun setDevRegion(next: PriceRegion) {
+        if (next == region) return
         region = next
         repo.setRegion(next)
-        val current = repo.getSession()
-        if (current != null) {
-            val seeded = Catalog.findSku(next, current.tier, current.duration)?.let { repo.sessionFromSku(it) }
-            if (seeded != null) {
-                repo.setSession(seeded)
-                session = seeded
-                tier = seeded.tier
-                duration = seeded.duration
-            }
-        }
-        nepalPsp = null
-        paymentError = null
-        coupon = null
+        remapSession(next)
+        onDevToggle()
     }
 
     fun setSubscribed(on: Boolean) {
@@ -106,15 +126,54 @@ class CheckoutViewModel(application: Application) : AndroidViewModel(application
                 val next = repo.sessionFromSku(seeded)
                 repo.setSession(next)
                 session = next
+                if (screen == Screen.CHECKOUT) {
+                    tier = next.tier
+                    duration = next.duration
+                }
             }
         } else {
             repo.setSession(null)
+            repo.clearPasses()
             session = null
+            ownedPasses = emptySet()
             manageMode = false
         }
+        onDevToggle()
     }
 
-    fun openCheckout(manage: Boolean = false) {
+    /** Keep tier, term, cancel, and pending plan; only the region-specific sku changes. */
+    private fun remapSession(next: PriceRegion) {
+        val current = repo.getSession() ?: return
+        val sku = Catalog.findSku(next, current.tier, current.duration) ?: return
+        val pending = current.pendingPlan?.let { plan ->
+            val mapped = Catalog.findSku(next, plan.tier, plan.duration)
+            plan.copy(skuId = mapped?.id ?: plan.skuId)
+        }
+        val seeded = current.copy(
+            skuId = sku.id,
+            region = sku.region,
+            liveSports = sku.liveSports,
+            entitlement = sku.entitlement,
+            billingMode = if (next.stripe) BillingMode.RECURRING else BillingMode.PREPAID,
+            nextBillingDate = if (next.stripe) current.nextBillingDate ?: current.paidThrough else current.nextBillingDate,
+            pendingPlan = pending,
+        )
+        repo.setSession(seeded)
+        session = seeded
+    }
+
+    private fun onDevToggle() {
+        nepalPsp = null
+        paymentError = null
+        coupon = null
+        cardForm = CardForm()
+        if (screen != Screen.CHECKOUT) return
+        manageMode = session != null
+        if (step == 1 && !canAdvanceFromPlan) step = 0
+    }
+
+    fun openCheckout(manage: Boolean = false, exclusive: Boolean = false) {
+        catalogTab = if (exclusive && exclusiveEnabled) CatalogTab.EXCLUSIVE else CatalogTab.PLANS
         manageMode = manage && session != null
         if (manageMode) {
             session?.let {
@@ -232,13 +291,6 @@ class CheckoutViewModel(application: Application) : AndroidViewModel(application
                 paymentError = "Card declined. Try another."
                 return false
             }
-        } else if (mobileNumber.trim().length < 5) {
-            paymentError = if (method == NepalPsp.CONNECTIPS) {
-                "Enter a valid account or customer ID."
-            } else {
-                "Enter a valid mobile number."
-            }
-            return false
         }
         lastPaymentLabel = method.title
         completePurchase()
@@ -259,6 +311,16 @@ class CheckoutViewModel(application: Application) : AndroidViewModel(application
     }
 
     private fun completePurchase() {
+        if (buyingEvent) {
+            val pass = event ?: return
+            repo.addPass(pass.key)
+            ownedPasses = repo.getPasses()
+            completedEvent = pass
+            completedKind = PlanChangeKind.NEW
+            step = 2
+            return
+        }
+        completedEvent = null
         val selected = sku ?: return
         val kind = planChange?.kind ?: PlanChangeKind.NEW
         completedKind = kind

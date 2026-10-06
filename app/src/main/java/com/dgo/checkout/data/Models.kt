@@ -99,3 +99,5 @@ data class CardForm(
 )
 
 enum class Screen { HOME, ACCOUNT, CHECKOUT }
+
+enum class CatalogTab { PLANS, EXCLUSIVE }
