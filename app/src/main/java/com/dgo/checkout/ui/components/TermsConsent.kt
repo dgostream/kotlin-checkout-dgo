@@ -137,6 +137,7 @@ private fun TermsReader(initialInternational: Boolean, onDismiss: () -> Unit) {
                         }
                         Spacer(Modifier.height(24.dp))
                         Text("Questions about your subscription?", color = White.copy(0.60f), fontSize = 13.sp, lineHeight = 20.sp)
+                        Text("Contact us through our official social channels or email.", color = White.copy(0.60f), fontSize = 13.sp, lineHeight = 20.sp)
                         Text("support@watchdgo.com", color = TermsAccent, fontSize = 13.sp, lineHeight = 20.sp)
                     }
                 }

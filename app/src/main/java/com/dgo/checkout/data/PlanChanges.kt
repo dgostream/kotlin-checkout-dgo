@@ -2,7 +2,7 @@ package com.dgo.checkout.data
 
 import java.time.Instant
 
-const val NEPAL_ACTIVE_PLAN_MESSAGE = "You already have an active subscription. Another plan cannot be purchased until your current plan ends. For upgrade-related queries, please contact customer support by email or through our official social channels."
+const val NEPAL_ACTIVE_PLAN_MESSAGE = "You already have an active subscription. Another plan cannot be purchased while your current plan is active. For upgrade-related queries, please contact customer support by email or through our official social channels."
 
 fun SubscriptionSession.hasActiveNepalPlan(now: Instant = Instant.now()): Boolean =
     region == PriceRegion.NEPAL && runCatching { Instant.parse(paidThrough).isAfter(now) }.getOrDefault(true)

@@ -10,11 +10,11 @@
       },
       {
         "title": "2. Strict No Refund Policy",
-        "body": "2.1 Absolute Non-Refundability: Because digital streaming content & service credentials are accessible immediately upon payment, ALL international subscription sales processed through the platform are STRICTLY NON-REFUNDABLE IN ALL CASES AND UNDER ALL CIRCUMSTANCES (no cash refunds, partial refunds, pro-rata credits, or billing adjustments for accidental purchases, wrong packages, duplicates, buyer's remorse, or non-usage)."
+        "body": "2.1 Absolute Non-Refundability: Because digital streaming content & service credentials are accessible immediately upon payment, ALL international subscription sales processed through the platform are STRICTLY NON-REFUNDABLE IN ALL CASES AND UNDER ALL CIRCUMSTANCES (no cash refunds, partial refunds, pro-rata credits, or billing adjustments for accidental purchases, wrong packages, buyer's remorse, or non-usage)."
       },
       {
         "title": "3. Non-Refundable Scenarios & Buyer Responsibilities",
-        "body": "3.1 Accidental / Duplicate Purchases: Wrong plan selection, multiple purchases by mistake, or user checkout error. 3.2 Buyer's Remorse: Changing mind post-purchase, content dissatisfaction, or deciding not to use the service. 3.3 Device & Network Incompatibility: Issues caused by network, ISP limits, VPN/Proxy interference, or unsupported hardware/browsers. 3.4 Geographical & Rights Restrictions: Inability to view specific titles due to territorial licensing outside Nepal. 3.5 Account Inactivity & Auto-Renewals: Failure to log in/use subscription, or failure to cancel auto-renewals prior to billing."
+        "body": "3.1 Accidental Purchases: Wrong plan selection or user checkout error. 3.2 Buyer's Remorse: Changing mind post-purchase, content dissatisfaction, or deciding not to use the service. 3.3 Device & Network Incompatibility: Issues caused by network, ISP limits, VPN/Proxy interference, or unsupported hardware/browsers. 3.4 Geographical & Rights Restrictions: Inability to view specific titles due to territorial licensing outside Nepal. 3.5 Account Inactivity & Auto-Renewals: Failure to log in/use subscription, or failure to cancel auto-renewals prior to billing."
       },
       {
         "title": "4. Chargebacks, Disputes & System Outages",
@@ -26,7 +26,7 @@
       },
       {
         "title": "6. Customer Support, Audit Logs & Checkout Consent",
-        "body": "6.1 Support Channel: Contact support via in-app chat or email at support@watchdgo.com for assistance. 6.2 Conclusive Records: DGO's system audit logs, timestamped authorization records, and watch-time telemetry serve as final conclusive evidence of subscription activation and viewing activity."
+        "body": "6.1 Support Channel: Contact DGO Support through our official social channels or by email at support@watchdgo.com for assistance. 6.2 Conclusive Records: DGO's system audit logs, timestamped authorization records, and watch-time telemetry serve as final conclusive evidence of subscription activation and viewing activity."
       },
       {
         "title": "7. SUBSCRIBER CHECKOUT ACKNOWLEDGEMENT:",
@@ -47,11 +47,11 @@
       },
       {
         "title": "2. Refund Eligibility & Rules",
-        "body": "2.1 Non-Refundable Nature: Because streaming content is accessible immediately upon purchase, subscriptions are generally non-refundable. Cash refunds for 'double payment' or 'wrong package' will strictly be considered ONLY if ALL mandatory conditions are met: • 24-Hour Reporting Window: Must be formally submitted to DGO Support within 24 hours of the transaction timestamp. • 12-Hour New Plan Purchase: Upgraded plan must be purchased using same User ID within 12 hours of reporting and acknowledgement by Support. • Identity & Payment Match: Transaction details (ID, payment ref, email, phone) must match DGO records and gateway logs. • One-Time Allowance: Accidental purchase refund requests are limited to a maximum of ONE approved request per user account per calendar year."
+        "body": "2.1 Non-Refundable Nature: Because streaming content is accessible immediately upon purchase, subscriptions are generally non-refundable. Cash refund requests for a wrong package will strictly be considered ONLY if ALL mandatory conditions are met: • 24-Hour Reporting Window: The request must be submitted to DGO Support within 24 hours of the transaction timestamp. • 12-Hour Upgraded Plan Purchase: After an upgrade query, DGO Support must remove the existing entitlement before a new plan can be purchased. The upgraded plan must be purchased using the same User ID within 12 hours after DGO Support removes that entitlement. • Identity & Payment Match: Transaction details (ID, payment ref, email, phone) must match DGO records and gateway logs. • One-Time Allowance: Accidental purchase refund requests are limited to a maximum of ONE approved request per user account per calendar year. 2.2 Upgrade Queries: Another subscription cannot be purchased while the current plan is active. For upgrade-related queries, contact DGO Support through our official social channels or by email at support@watchdgo.com. The 12-hour purchase window begins when Support removes the existing entitlement, not when the query is submitted."
       },
       {
         "title": "3. Non-Refundable Scenarios & Buyer Responsibilities",
-        "body": "• Expired Window: Refund request submitted after 24 hours from the transaction time. • Failure to Purchase Upgraded Plan: Failure to purchase the upgraded plan within 12 hours of submitting the report to DGO Support. • Buyer's Remorse: Changing mind, no longer wishing to watch, or selecting an incompatible package/device. • External Technical Issues: Disruptions caused by user network failure, ISP connection issues, or device incompatibility."
+        "body": "• Expired Window: Refund request submitted after 24 hours from the transaction time. • Failure to Purchase the Upgraded Plan: The upgraded plan is not purchased within 12 hours after DGO Support removes the existing entitlement following the upgrade query. • Buyer's Remorse: Changing mind, no longer wishing to watch, or selecting an incompatible package/device. • External Technical Issues: Disruptions caused by user network failure, ISP connection issues, or device incompatibility."
       },
       {
         "title": "4. Processing Fees & Gateway Deductions",
@@ -63,7 +63,7 @@
       },
       {
         "title": "6. Contact & Dispute Resolution",
-        "body": "6.1 Support Contact: To request support or submit a refund inquiry, users must contact DGO Support through official in-app support chat or email at support@watchdgo.com within 24 hours of purchase, providing registered phone/email and transaction ID. 6.2 Log Verification: All platform system logs, watch-time data, and payment gateway settlement records maintained by DGO shall serve as final and conclusive evidence regarding subscription activity and refund eligibility."
+        "body": "6.1 Support Contact: To request support or submit a refund inquiry, contact DGO Support through our official social channels or by email at support@watchdgo.com. Wrong-package refund requests must be reported within 24 hours of purchase, providing registered phone/email and transaction ID. 6.2 Log Verification: All platform system logs, watch-time data, and payment gateway settlement records maintained by DGO shall serve as final and conclusive evidence regarding subscription activity and refund eligibility."
       },
       {
         "title": "7. SUBSCRIBER CHECKOUT ACKNOWLEDGEMENT:",
