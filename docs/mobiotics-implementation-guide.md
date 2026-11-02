@@ -54,17 +54,32 @@ Two tiers, three durations, four regions: 24 SKUs.
 
 | SKU pattern | 1 month | 3 months | 12 months |
 | --- | --- | --- | --- |
-| NP Mobile / Plus (NPR) | 199 / 299 | 549 / 799 | 1,799 / 2,699 |
-| ZA Mobile / Plus (USD) | 3.99 / 5.99 | 9.99 / 14.99 | 35.99 / 50.99 |
-| ZB Mobile / Plus (USD) | 6.99 / 8.99 | 18.99 / 29.99 | 64.99 / 99.99 |
-| ZC Mobile / Plus (USD) | 4.99 / 6.99 | 10.99 / 17.99 | 44.99 / 65.99 |
+| NP Mobile / Plus (NPR) | 249 / 399 | 699 / 899 | 2,499 / 2,699 |
+| ZA Mobile / Plus (USD) | 3.99 / 5.99 | 8.99 / 14.49 | 37.99 / 52.99 |
+| ZB Mobile / Plus (USD) | 6.99 / 9.99 | 16.99 / 24.49 | 59.99 / 85.99 |
+| ZC Mobile / Plus (USD) | 4.99 / 6.99 | 10.99 / 16.99 | 40.99 / 59.99 |
+
+These are the current **Offer** prices from the DGO Pricing Snapshot. Crossed-out **Regular** prices are:
+
+| Region / Tier | 1 month | 3 months | 12 months |
+| --- | --- | --- | --- |
+| NP Mobile / Plus (NPR) | 349 / 499 | 849 / 1,199 | 2,999 / 3,999 |
+| ZA Mobile / Plus (USD) | 4.99 / 6.99 | 10.99 / 16.99 | 44.99 / 60.99 |
+| ZB Mobile / Plus (USD) | 7.99 / 12.99 | 20.99 / 29.99 | 65.99 / 99.99 |
+| ZC Mobile / Plus (USD) | 5.99 / 7.99 | 14.99 / 19.99 | 49.99 / 70.99 |
+
+Plan-card discounts compare Offer with Regular for the same duration. Duration tabs separately compare the term price with repeated one-month purchases. Charges and plan-change calculations use Offer prices.
+
+### Terms and checkout consent
+
+The November 2026 Nepal and international documents are bundled in `app/src/main/assets/terms.json`, based on `D:\Dhgo-prototype\src\data\terms.json`. The Nepal acknowledgement explicitly refers to the refund eligibility rules "in the Nepal Terms & Conditions" so it is clear where to find them from checkout. Home, Account and payment screens provide a reader with Nepal / International selection. Checkout shows the applicable regional acknowledgement and requires explicit acceptance before Nepal payment or Stripe continuation, including plan changes and exclusive passes. Opening or closing the reader does not accept the terms. Consent resets on a new checkout, returning from plan selection, or changing the dev region/state.
 
 SKU IDs follow `DGO-{NP|ZA|ZB|ZC}-{MOB|PLS}-{01M|03M|12M}`, for example `DGO-ZB-PLS-03M`.
 
 Rules:
 
 - **1-month plans have no live sports.** 3- and 12-month plans include live sports. Show this on the duration selector.
-- **Stripe plans charge the full SKU price once per billing period:** 1 month = monthly, 3 months = **quarterly** (e.g. $29.99 every 3 months), 12 months = annually. In Stripe this is the Price's `interval` + `interval_count` (3-month = `month` × 3).
+- **Stripe plans charge the full SKU price once per billing period:** 1 month = monthly, 3 months = **quarterly** (e.g. $24.49 every 3 months), 12 months = annually. In Stripe this is the Price's `interval` + `interval_count` (3-month = `month` × 3).
 - The duration selector may show an equivalent monthly rate (e.g. "$10.00/mo") for comparison, but the price and the charge are the full amount.
 - Nepal is always a one-time payment for the full term.
 
@@ -240,7 +255,7 @@ For backend-driven states (cancelling, pending downgrade), use Stripe **test mod
 
 | # | Toggle | Steps | Expect |
 | --- | --- | --- | --- |
-| 1 | ZB · OFF | Subscribe to Plus 3M | Payment shows Stripe only; due $29.99, "Billed every 3 months"; "Continue to Stripe · $29.99" |
+| 1 | ZB · OFF | Subscribe to Plus 3M | Payment shows Stripe only; due $24.49, "Billed every 3 months"; "Continue to Stripe · $24.49"; disabled until international terms accepted |
 | 2 | ZB · OFF | Enter a valid promo code | Due drops; the strike-through shows the original price |
 | 3 | ZA · SUB (Mobile 3M) | Manage → Plus 3M | Upgrade chip, "Price difference", billing date unchanged after |
 | 3b | ZA · SUB (Plus 3M) | Manage → Plus 12M | Upgrade chip; note says a new billing period starts today; next bill in 12 months after |

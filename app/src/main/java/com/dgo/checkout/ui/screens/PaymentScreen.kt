@@ -51,6 +51,7 @@ import com.dgo.checkout.ui.components.BrandButton
 import com.dgo.checkout.ui.components.CouponField
 import com.dgo.checkout.ui.components.GhostField
 import com.dgo.checkout.ui.components.RadioDot
+import com.dgo.checkout.ui.components.TermsConsent
 import com.dgo.checkout.ui.theme.Danger
 import com.dgo.checkout.ui.theme.Ink
 import com.dgo.checkout.ui.theme.StripePurple
@@ -131,6 +132,8 @@ private fun NepalCheckout(vm: CheckoutViewModel, title: String) {
                 NepalMethodRow(method, vm)
             }
         }
+        Spacer(Modifier.height(14.dp))
+        TermsConsent(vm)
         vm.paymentError?.let {
             Spacer(Modifier.height(10.dp))
             ErrorBanner(it)
@@ -139,7 +142,7 @@ private fun NepalCheckout(vm: CheckoutViewModel, title: String) {
         BrandButton(
             label = if (vm.nepalPsp != null) "Pay $price via ${vm.nepalPsp!!.title}" else "Pay $price",
             onClick = { vm.submitNepalPayment() },
-            enabled = vm.nepalPsp != null,
+            enabled = vm.nepalPsp != null && vm.termsAccepted,
             modifier = Modifier.fillMaxWidth(),
             leading = { Icon(Icons.Outlined.Lock, null, tint = White, modifier = Modifier.size(14.dp)) },
         )
@@ -260,6 +263,9 @@ private fun StripeHostedCheckout(vm: CheckoutViewModel, title: String) {
     Spacer(Modifier.height(12.dp))
     StripePanel(newSubscription)
 
+    Spacer(Modifier.height(14.dp))
+    TermsConsent(vm)
+
     vm.paymentError?.let {
         Spacer(Modifier.height(10.dp))
         ErrorBanner(it)
@@ -272,6 +278,7 @@ private fun StripeHostedCheckout(vm: CheckoutViewModel, title: String) {
             else -> "Continue to Stripe · $due"
         },
         onClick = { vm.submitStripePayment() },
+        enabled = vm.termsAccepted,
         modifier = Modifier.fillMaxWidth(),
         leading = { Icon(Icons.Outlined.Lock, null, tint = White, modifier = Modifier.size(14.dp)) },
     )

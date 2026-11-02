@@ -23,6 +23,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.ChevronLeft
+import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -57,6 +59,7 @@ import com.dgo.checkout.data.planActionLabel
 import com.dgo.checkout.data.planStateLabel
 import com.dgo.checkout.data.resolvePlanChange
 import com.dgo.checkout.data.savingsVsMonthly
+import com.dgo.checkout.data.offerSavings
 import com.dgo.checkout.ui.CheckoutViewModel
 import com.dgo.checkout.ui.components.BrandButton
 import com.dgo.checkout.ui.theme.BrandGradient
@@ -223,6 +226,30 @@ private fun PlanPager(vm: CheckoutViewModel) {
                 if (vm.tier != next) vm.tier = next
             }
     }
+    val nextPage = if (pagerState.currentPage == 0) 1 else 0
+    val nextTier = tiers[nextPage]
+    val cueShape = RoundedCornerShape(14.dp)
+    Row(
+        Modifier.fillMaxWidth()
+            .clip(cueShape)
+            .background(BrandPurple.copy(0.18f))
+            .border(1.dp, BrandPurple.copy(0.50f), cueShape)
+            .clickable { scope.launch { pagerState.animateScrollToPage(nextPage) } }
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Column(Modifier.weight(1f)) {
+            Text("Swipe for ${TIER_META.getValue(nextTier).shortName}", color = White, fontSize = 16.sp, lineHeight = 22.sp, fontWeight = FontWeight.Bold)
+            Text("Or tap here to compare plans", color = White.copy(0.65f), fontSize = 12.sp, lineHeight = 18.sp)
+        }
+        Icon(
+            if (nextPage > pagerState.currentPage) Icons.Filled.ChevronRight else Icons.Filled.ChevronLeft,
+            contentDescription = null,
+            tint = White,
+            modifier = Modifier.size(28.dp),
+        )
+    }
+    Spacer(Modifier.height(12.dp))
     HorizontalPager(
         state = pagerState,
         contentPadding = PaddingValues(horizontal = 8.dp),
@@ -246,13 +273,6 @@ private fun PlanPager(vm: CheckoutViewModel) {
             )
         }
     }
-    Text(
-        "Swipe for ${if (pagerState.currentPage == 0) "Mobile" else "Plus"}",
-        color = White.copy(0.35f),
-        fontSize = 11.sp,
-        modifier = Modifier.fillMaxWidth().padding(top = 6.dp),
-        textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-    )
 }
 
 @Composable
@@ -326,7 +346,7 @@ private fun TierCard(
     val currentPlan = vm.manageMode && row != null && vm.session?.skuId == row.id
     val rowChange = resolvePlanChange(vm.session, row, vm.manageMode)
     val save = if (row != null && rowChange?.kind != PlanChangeKind.FIXED_TIER_UPGRADE && rowChange?.kind != PlanChangeKind.DEFERRED) {
-        savingsVsMonthly(vm.region, id, vm.duration)
+        offerSavings(vm.region, id, vm.duration)
     } else null
     val compareAt = if (save != null) compareAtPrice(vm.region, id, vm.duration) else 0.0
     val displayAmount = when {
@@ -365,17 +385,17 @@ private fun TierCard(
             }
         }
         Spacer(Modifier.height(14.dp))
+        if (save != null && compareAt > 0 && row != null) {
+            Text(
+                formatMoney(compareAt, row.currency),
+                color = White.copy(0.30f),
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                textDecoration = TextDecoration.LineThrough,
+                modifier = Modifier.padding(bottom = 4.dp),
+            )
+        }
         Row(verticalAlignment = Alignment.Bottom) {
-            if (save != null && compareAt > 0 && row != null) {
-                Text(
-                    formatMoney(compareAt, row.currency),
-                    color = White.copy(0.30f),
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Bold,
-                    textDecoration = TextDecoration.LineThrough,
-                    modifier = Modifier.padding(end = 8.dp, bottom = 4.dp),
-                )
-            }
             Text(
                 row?.let { formatMoney(displayAmount, it.currency) } ?: "—",
                 color = White,

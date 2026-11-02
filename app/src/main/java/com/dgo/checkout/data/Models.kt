@@ -48,6 +48,7 @@ data class SubscriptionSku(
     val currency: Currency,
     val entitlement: Entitlement,
     val liveSports: Boolean,
+    val regularPrice: Double = price,
 )
 
 data class PendingPlan(

@@ -28,9 +28,18 @@ import com.dgo.checkout.data.SubscriptionSession
 import com.dgo.checkout.data.SubscriptionSku
 import com.dgo.checkout.data.applyCouponAmount
 import com.dgo.checkout.data.resolvePlanChange
+import com.dgo.checkout.data.Terms
 
 class CheckoutViewModel(application: Application) : AndroidViewModel(application) {
     private val repo = SessionRepository(application)
+    val terms = Terms.load(application)
+    var termsAccepted by mutableStateOf(false)
+        private set
+
+    fun acceptTerms(accepted: Boolean) {
+        termsAccepted = accepted
+        paymentError = null
+    }
 
     var screen by mutableStateOf(Screen.HOME)
         private set
@@ -163,6 +172,7 @@ class CheckoutViewModel(application: Application) : AndroidViewModel(application
     }
 
     private fun onDevToggle() {
+        termsAccepted = false
         nepalPsp = null
         paymentError = null
         coupon = null
@@ -173,6 +183,7 @@ class CheckoutViewModel(application: Application) : AndroidViewModel(application
     }
 
     fun openCheckout(manage: Boolean = false, exclusive: Boolean = false) {
+        termsAccepted = false
         catalogTab = if (exclusive && exclusiveEnabled) CatalogTab.EXCLUSIVE else CatalogTab.PLANS
         manageMode = manage && session != null
         if (manageMode) {
@@ -256,6 +267,7 @@ class CheckoutViewModel(application: Application) : AndroidViewModel(application
 
     fun nextFromPlan() {
         if (!canAdvanceFromPlan) return
+        termsAccepted = false
         step = 1
     }
 
@@ -272,6 +284,7 @@ class CheckoutViewModel(application: Application) : AndroidViewModel(application
 
     fun submitNepalPayment(): Boolean {
         paymentError = null
+        if (!requireTermsConsent()) return false
         val method = nepalPsp
         if (method == null) {
             paymentError = "Choose a payment method."
@@ -304,10 +317,17 @@ class CheckoutViewModel(application: Application) : AndroidViewModel(application
      */
     fun submitStripePayment(): Boolean {
         paymentError = null
+        if (!requireTermsConsent()) return false
         if (planChange?.kind != PlanChangeKind.NEW) coupon = null
         lastPaymentLabel = "Stripe Checkout"
         completePurchase()
         return true
+    }
+
+    private fun requireTermsConsent(): Boolean {
+        if (termsAccepted) return true
+        paymentError = "Please read and accept the Terms & Conditions before continuing."
+        return false
     }
 
     private fun completePurchase() {

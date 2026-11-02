@@ -89,6 +89,7 @@ fun LandingScreen(vm: CheckoutViewModel) {
                 tab.rails.forEach { rail ->
                     item { RailBlock(rail.title, tab.color, rail.items) { vm.detail = it } }
                 }
+                item { com.dgo.checkout.ui.components.TermsLink(vm.region.stripe, label = "Terms & Conditions") }
                 item { FooterNote() }
             }
         }
@@ -276,9 +277,9 @@ private fun SubscribeDrive(vm: CheckoutViewModel) {
             Spacer(Modifier.height(14.dp))
             BrandButton(label = "See plans", onClick = { vm.openCheckout(false) }, modifier = Modifier.fillMaxWidth())
             Spacer(Modifier.height(10.dp))
-            PlanTeaser("DGO Mobile", "720p · phones & tablets", "From रू 199 / $3.99", BrandPurple) { vm.openCheckout(false) }
+            PlanTeaser("DGO Mobile", "720p · phones & tablets", "From रू 249 / $3.99", BrandPurple) { vm.openCheckout(false) }
             Spacer(Modifier.height(8.dp))
-            PlanTeaser("DGO Plus", "1080p · TV & 3 streams", "From रू 299 / $5.99", BrandPink) { vm.openCheckout(false) }
+            PlanTeaser("DGO Plus", "1080p · TV & 3 streams", "From रू 399 / $5.99", BrandPink) { vm.openCheckout(false) }
         }
     }
 }

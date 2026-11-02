@@ -12,6 +12,8 @@ The app opens on a mobile landing (home, JioHotstar, OSR, sports, entertainment,
 - Plan changes (upgrade, downgrade, renewal, extension) and Stripe cancel / resume on the Account screen
 - Confirmation screen, then a subscribed home
 - Prototype coupons `DGO10` / `DGO20` on Nepal checkout
+- Regional Nepal / international terms (November 2026), readable from Home, Account and checkout; explicit consent required before payment
+- Offer and crossed-out regular prices from the DGO Pricing Snapshot
 - Dev overlay, same idea as the web prototype:
 
   `DEV · GEO / STATE` → **NP | ZA | ZB | ZC** and **OFF | SUB**
@@ -20,10 +22,10 @@ The app opens on a mobile landing (home, JioHotstar, OSR, sports, entertainment,
 
 | Zone | Toggle | Currency | Sample Plus 3M |
 | --- | --- | --- | --- |
-| Nepal | NP | NPR | रू 799 · wallets · one-time |
-| India & Middle East | ZA | USD | $14.99 · Stripe |
-| USA / Europe / AU / NZ | ZB | USD | $29.99 · Stripe |
-| South East Asia | ZC | USD | $17.99 · Stripe |
+| Nepal | NP | NPR | रू 899 · wallets · one-time |
+| India & Middle East | ZA | USD | $14.49 · Stripe |
+| USA / Europe / AU / NZ | ZB | USD | $24.49 · Stripe |
+| South East Asia | ZC | USD | $16.99 · Stripe |
 
 1-month plans have no live sports. Stripe plans charge the full price each period: monthly, every 3 months (quarterly), or annually.
 

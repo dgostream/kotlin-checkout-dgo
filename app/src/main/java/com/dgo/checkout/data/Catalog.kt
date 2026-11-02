@@ -10,33 +10,33 @@ import kotlin.math.roundToInt
  */
 object Catalog {
     val SKUS: List<SubscriptionSku> = listOf(
-        sku("DGO-NP-MOB-01M", PriceRegion.NEPAL, PlanTier.MOBILE, PlanDuration.M01, 199.0, false),
-        sku("DGO-NP-PLS-01M", PriceRegion.NEPAL, PlanTier.PLUS, PlanDuration.M01, 299.0, false),
-        sku("DGO-NP-MOB-03M", PriceRegion.NEPAL, PlanTier.MOBILE, PlanDuration.M03, 549.0, true),
-        sku("DGO-NP-PLS-03M", PriceRegion.NEPAL, PlanTier.PLUS, PlanDuration.M03, 799.0, true),
-        sku("DGO-NP-MOB-12M", PriceRegion.NEPAL, PlanTier.MOBILE, PlanDuration.M12, 1799.0, true),
-        sku("DGO-NP-PLS-12M", PriceRegion.NEPAL, PlanTier.PLUS, PlanDuration.M12, 2699.0, true),
+        sku("DGO-NP-MOB-01M", PriceRegion.NEPAL, PlanTier.MOBILE, PlanDuration.M01, 249.0, 349.0, false),
+        sku("DGO-NP-PLS-01M", PriceRegion.NEPAL, PlanTier.PLUS, PlanDuration.M01, 399.0, 499.0, false),
+        sku("DGO-NP-MOB-03M", PriceRegion.NEPAL, PlanTier.MOBILE, PlanDuration.M03, 699.0, 849.0, true),
+        sku("DGO-NP-PLS-03M", PriceRegion.NEPAL, PlanTier.PLUS, PlanDuration.M03, 899.0, 1199.0, true),
+        sku("DGO-NP-MOB-12M", PriceRegion.NEPAL, PlanTier.MOBILE, PlanDuration.M12, 2499.0, 2999.0, true),
+        sku("DGO-NP-PLS-12M", PriceRegion.NEPAL, PlanTier.PLUS, PlanDuration.M12, 2699.0, 3999.0, true),
 
-        sku("DGO-ZA-MOB-01M", PriceRegion.ZONE_A, PlanTier.MOBILE, PlanDuration.M01, 3.99, false),
-        sku("DGO-ZA-PLS-01M", PriceRegion.ZONE_A, PlanTier.PLUS, PlanDuration.M01, 5.99, false),
-        sku("DGO-ZA-MOB-03M", PriceRegion.ZONE_A, PlanTier.MOBILE, PlanDuration.M03, 9.99, true),
-        sku("DGO-ZA-PLS-03M", PriceRegion.ZONE_A, PlanTier.PLUS, PlanDuration.M03, 14.99, true),
-        sku("DGO-ZA-MOB-12M", PriceRegion.ZONE_A, PlanTier.MOBILE, PlanDuration.M12, 35.99, true),
-        sku("DGO-ZA-PLS-12M", PriceRegion.ZONE_A, PlanTier.PLUS, PlanDuration.M12, 50.99, true),
+        sku("DGO-ZA-MOB-01M", PriceRegion.ZONE_A, PlanTier.MOBILE, PlanDuration.M01, 3.99, 4.99, false),
+        sku("DGO-ZA-PLS-01M", PriceRegion.ZONE_A, PlanTier.PLUS, PlanDuration.M01, 5.99, 6.99, false),
+        sku("DGO-ZA-MOB-03M", PriceRegion.ZONE_A, PlanTier.MOBILE, PlanDuration.M03, 8.99, 10.99, true),
+        sku("DGO-ZA-PLS-03M", PriceRegion.ZONE_A, PlanTier.PLUS, PlanDuration.M03, 14.49, 16.99, true),
+        sku("DGO-ZA-MOB-12M", PriceRegion.ZONE_A, PlanTier.MOBILE, PlanDuration.M12, 37.99, 44.99, true),
+        sku("DGO-ZA-PLS-12M", PriceRegion.ZONE_A, PlanTier.PLUS, PlanDuration.M12, 52.99, 60.99, true),
 
-        sku("DGO-ZB-MOB-01M", PriceRegion.ZONE_B, PlanTier.MOBILE, PlanDuration.M01, 6.99, false),
-        sku("DGO-ZB-PLS-01M", PriceRegion.ZONE_B, PlanTier.PLUS, PlanDuration.M01, 8.99, false),
-        sku("DGO-ZB-MOB-03M", PriceRegion.ZONE_B, PlanTier.MOBILE, PlanDuration.M03, 18.99, true),
-        sku("DGO-ZB-PLS-03M", PriceRegion.ZONE_B, PlanTier.PLUS, PlanDuration.M03, 29.99, true),
-        sku("DGO-ZB-MOB-12M", PriceRegion.ZONE_B, PlanTier.MOBILE, PlanDuration.M12, 64.99, true),
-        sku("DGO-ZB-PLS-12M", PriceRegion.ZONE_B, PlanTier.PLUS, PlanDuration.M12, 99.99, true),
+        sku("DGO-ZB-MOB-01M", PriceRegion.ZONE_B, PlanTier.MOBILE, PlanDuration.M01, 6.99, 7.99, false),
+        sku("DGO-ZB-PLS-01M", PriceRegion.ZONE_B, PlanTier.PLUS, PlanDuration.M01, 9.99, 12.99, false),
+        sku("DGO-ZB-MOB-03M", PriceRegion.ZONE_B, PlanTier.MOBILE, PlanDuration.M03, 16.99, 20.99, true),
+        sku("DGO-ZB-PLS-03M", PriceRegion.ZONE_B, PlanTier.PLUS, PlanDuration.M03, 24.49, 29.99, true),
+        sku("DGO-ZB-MOB-12M", PriceRegion.ZONE_B, PlanTier.MOBILE, PlanDuration.M12, 59.99, 65.99, true),
+        sku("DGO-ZB-PLS-12M", PriceRegion.ZONE_B, PlanTier.PLUS, PlanDuration.M12, 85.99, 99.99, true),
 
-        sku("DGO-ZC-MOB-01M", PriceRegion.ZONE_C, PlanTier.MOBILE, PlanDuration.M01, 4.99, false),
-        sku("DGO-ZC-PLS-01M", PriceRegion.ZONE_C, PlanTier.PLUS, PlanDuration.M01, 6.99, false),
-        sku("DGO-ZC-MOB-03M", PriceRegion.ZONE_C, PlanTier.MOBILE, PlanDuration.M03, 10.99, true),
-        sku("DGO-ZC-PLS-03M", PriceRegion.ZONE_C, PlanTier.PLUS, PlanDuration.M03, 17.99, true),
-        sku("DGO-ZC-MOB-12M", PriceRegion.ZONE_C, PlanTier.MOBILE, PlanDuration.M12, 44.99, true),
-        sku("DGO-ZC-PLS-12M", PriceRegion.ZONE_C, PlanTier.PLUS, PlanDuration.M12, 65.99, true),
+        sku("DGO-ZC-MOB-01M", PriceRegion.ZONE_C, PlanTier.MOBILE, PlanDuration.M01, 4.99, 5.99, false),
+        sku("DGO-ZC-PLS-01M", PriceRegion.ZONE_C, PlanTier.PLUS, PlanDuration.M01, 6.99, 7.99, false),
+        sku("DGO-ZC-MOB-03M", PriceRegion.ZONE_C, PlanTier.MOBILE, PlanDuration.M03, 10.99, 14.99, true),
+        sku("DGO-ZC-PLS-03M", PriceRegion.ZONE_C, PlanTier.PLUS, PlanDuration.M03, 16.99, 19.99, true),
+        sku("DGO-ZC-MOB-12M", PriceRegion.ZONE_C, PlanTier.MOBILE, PlanDuration.M12, 40.99, 49.99, true),
+        sku("DGO-ZC-PLS-12M", PriceRegion.ZONE_C, PlanTier.PLUS, PlanDuration.M12, 59.99, 70.99, true),
     )
 
     val COUPONS: Map<String, Int> = mapOf("DGO10" to 10, "DGO20" to 20)
@@ -55,6 +55,7 @@ object Catalog {
         tier: PlanTier,
         duration: PlanDuration,
         price: Double,
+        regularPrice: Double,
         liveSports: Boolean,
     ) = SubscriptionSku(
         id = id,
@@ -62,6 +63,7 @@ object Catalog {
         tier = tier,
         duration = duration,
         price = price,
+        regularPrice = regularPrice,
         currency = region.currency,
         entitlement = if (tier == PlanTier.PLUS) Entitlement.EP_PLUS else Entitlement.EP_MOBILE,
         liveSports = liveSports,
@@ -153,9 +155,15 @@ fun savingsVsMonthly(region: PriceRegion, tier: PlanTier, duration: PlanDuration
     return Savings(amount, percent, formatMoney(amount, picked.currency))
 }
 
+fun offerSavings(region: PriceRegion, tier: PlanTier, duration: PlanDuration): Savings? {
+    val sku = Catalog.findSku(region, tier, duration) ?: return null
+    val amount = sku.regularPrice - sku.price
+    if (amount <= 0 || sku.regularPrice <= 0) return null
+    return Savings(amount, ((amount / sku.regularPrice) * 100).roundToInt(), formatMoney(amount, sku.currency))
+}
+
 fun compareAtPrice(region: PriceRegion, tier: PlanTier, duration: PlanDuration): Double {
-    val monthly = Catalog.findSku(region, tier, PlanDuration.M01)?.price ?: 0.0
-    return monthly * duration.months()
+    return Catalog.findSku(region, tier, duration)?.regularPrice ?: 0.0
 }
 
 fun applyCouponAmount(amount: Double, currency: Currency, coupon: AppliedCoupon?): Double {
