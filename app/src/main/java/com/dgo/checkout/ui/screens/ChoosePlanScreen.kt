@@ -228,28 +228,6 @@ private fun PlanPager(vm: CheckoutViewModel) {
     }
     val nextPage = if (pagerState.currentPage == 0) 1 else 0
     val nextTier = tiers[nextPage]
-    val cueShape = RoundedCornerShape(14.dp)
-    Row(
-        Modifier.fillMaxWidth()
-            .clip(cueShape)
-            .background(BrandPurple.copy(0.18f))
-            .border(1.dp, BrandPurple.copy(0.50f), cueShape)
-            .clickable { scope.launch { pagerState.animateScrollToPage(nextPage) } }
-            .padding(horizontal = 16.dp, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Column(Modifier.weight(1f)) {
-            Text("Swipe for ${TIER_META.getValue(nextTier).shortName}", color = White, fontSize = 16.sp, lineHeight = 22.sp, fontWeight = FontWeight.Bold)
-            Text("Or tap here to compare plans", color = White.copy(0.65f), fontSize = 12.sp, lineHeight = 18.sp)
-        }
-        Icon(
-            if (nextPage > pagerState.currentPage) Icons.Filled.ChevronRight else Icons.Filled.ChevronLeft,
-            contentDescription = null,
-            tint = White,
-            modifier = Modifier.size(28.dp),
-        )
-    }
-    Spacer(Modifier.height(12.dp))
     HorizontalPager(
         state = pagerState,
         contentPadding = PaddingValues(horizontal = 8.dp),
@@ -271,6 +249,31 @@ private fun PlanPager(vm: CheckoutViewModel) {
                     .background(if (on) Color(TIER_META.getValue(tier).accent) else White.copy(0.25f))
                     .clickable { scope.launch { pagerState.animateScrollToPage(index) } },
             )
+        }
+    }
+    Row(
+        Modifier.fillMaxWidth().padding(top = 6.dp),
+        horizontalArrangement = Arrangement.Center,
+    ) {
+        Row(
+            Modifier.clickable { scope.launch { pagerState.animateScrollToPage(nextPage) } }
+                .padding(horizontal = 12.dp, vertical = 10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+        ) {
+            if (nextPage < pagerState.currentPage) {
+                Icon(Icons.Filled.ChevronLeft, null, tint = White.copy(0.85f), modifier = Modifier.size(18.dp))
+            }
+            Text(
+                "Swipe for ${TIER_META.getValue(nextTier).shortName}",
+                color = White.copy(0.85f),
+                fontSize = 14.sp,
+                lineHeight = 20.sp,
+                fontWeight = FontWeight.SemiBold,
+            )
+            if (nextPage > pagerState.currentPage) {
+                Icon(Icons.Filled.ChevronRight, null, tint = White.copy(0.85f), modifier = Modifier.size(18.dp))
+            }
         }
     }
 }
