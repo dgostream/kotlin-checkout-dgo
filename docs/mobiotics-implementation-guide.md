@@ -18,7 +18,7 @@ Everything else in the current DGO app (home, browse, player, search, rentals, a
 You have already mapped the Stripe plans. This guide covers what is still missing:
 
 - Subscription **states** (active, cancelling, pending change)
-- **Upgrade**, **downgrade**, **renewal** and **extension** rules
+- Stripe **upgrade** and **downgrade** rules, plus Nepal active-plan purchase restrictions
 - **Cancel** and **resume**
 - **Stripe-only payments** outside Nepal
 - **Dev toggles**, so QA can reach every state without real payments
@@ -106,7 +106,7 @@ For Stripe users, **Stripe webhooks are the source of truth**. Update this objec
 
 ## 5. Plan-change rules
 
-When a subscribed user opens checkout from **Account → Manage plan** (Stripe) or **Account → Add time or upgrade** (Nepal), compare the plan they pick against their current plan.
+For Stripe subscribers, **Account → Manage plan** compares the selected plan with the current plan. Nepal subscribers see **Current plan** with their access end date and support guidance.
 
 ### Stripe (ZA / ZB / ZC), recurring
 
@@ -120,14 +120,11 @@ If the change goes **down in either tier or duration**, treat it as a downgrade,
 
 ### Nepal (NP), prepaid
 
-| Picked plan vs current | Result | Button | Due today | What happens |
-| --- | --- | --- | --- | --- |
-| Same SKU | **Renewal** | "Add time" | Full price | Another term is added after `paidThrough`. |
-| Mobile → Plus, same duration | **Tier upgrade** | "Upgrade" | **Price difference only:** 1M रू100, 3M रू250, 12M रू900 | Plus starts now. **`paidThrough` does not change.** |
-| Longer duration | **Extension** | "Add time" | Full price | The new term is added after `paidThrough`. No auto-renew. |
-| Shorter duration, or Plus → Mobile | **Deferred** | "After this term" (disabled) | — | Blocked until the current term ends. |
+While a Nepal subscription is active, keep all tier cards, durations, offer prices and regular prices available for discovery. Mark the owned SKU **Current** and disable its **Current plan** action. Selecting another plan shows **Continue**; tapping it opens an active-plan notice instead of payment. Customers can dismiss it with **Keep browsing**. Do not perform add time, renewal, tier changes, extensions, price-difference charges, or proration. Another subscription cannot be purchased until the current plan expires, even when checkout is opened outside manage mode.
 
-Nepal has **no cancel**. Prepaid access simply ends on `paidThrough`.
+Display: "You already have an active subscription. Another plan cannot be purchased until your current plan ends. For upgrade-related queries, please contact customer support by email or through our official social channels."
+
+Provide a **Contact support** link to `support@watchdgo.com` and mention that customers can also contact DGO through official social channels. Account and Home provide **Browse plans** entry points; the subscription catalogue remains selectable while payment remains blocked. After expiry, a new purchase starts a fresh term. Nepal has no cancel action. Separate one-time exclusive event passes remain available.
 
 ### A cancelled Stripe subscription
 
@@ -189,7 +186,7 @@ Nepal keeps its own local coupons (prototype codes `DGO10` and `DGO20`).
 | State | What to show | Actions |
 | --- | --- | --- |
 | Not subscribed | "No active plans on this account" | **Subscribe now** → checkout |
-| Nepal, active | Plan name, "Access until {date}" | **Add time or upgrade** → checkout in manage mode |
+| Nepal, active | Plan name, "Access until {date}", purchase restriction message | **Browse plans** for discovery; **Contact support** for upgrade queries |
 | Stripe, active | Plan name, "Auto-renewal on", "Next bill {date}", ACTIVE badge | **Manage plan** → checkout in manage mode; **Cancel renewal** → cancel flow |
 | Stripe, pending downgrade | As above, plus the banner "Changes to {plan} on {date}" | Same |
 | Stripe, cancelling | "Cancellation scheduled", "Access until {date}", ENDS SOON badge | **Resume auto-renewal** (with a confirm step: "Next charge {price} on {date}") |
@@ -208,7 +205,7 @@ Nepal keeps its own local coupons (prototype codes `DGO10` and `DGO20`).
 
 - **Duration selector:** one rounded bar with three cells (1 month / 3 months / 12 months). Each cell shows the monthly rate, the saving on 12 months, and "Live sports" or "No live sports". The selected cell uses the DGO gradient (purple `#8A3FFC` → pink `#FF00BD` → orange `#FF4D00`).
 - **Tier cards:** Mobile and Plus are **two swipeable cards** with page dots. Each card shows the price, struck-through compare price, saving %, and features.
-- **In manage mode**, each card shows a state chip (Current / Upgrade / Downgrade / Add time / After this term) and a one-line note, using the rules in section 5.
+- **In Stripe manage mode**, each card shows a state chip (Current / Upgrade / Downgrade) and a one-line note, using the rules in section 5.
 - **Bottom bar:** plan name, the due-today text, and the action button from section 5.
 
 ### Step 2: Payment
@@ -224,9 +221,8 @@ Nepal keeps its own local coupons (prototype codes `DGO10` and `DGO20`).
 | Result | Title | "Paid today" row | Schedule row |
 | --- | --- | --- | --- |
 | New | You're in | Amount | Billing frequency, or Nepal "{n} months of access" |
-| Upgrade (Stripe or Nepal tier) | Plan updated | "Price difference" / fee | "Next bill {date}" / "Access date unchanged" |
+| Upgrade (Stripe) | Plan updated | "Price difference" | "Next bill {date}" |
 | Downgrade | Plan change scheduled | "No charge today" | "Starts on the next bill" |
-| Renewal / extension | Time added | Amount | "{n} months added after this term" |
 
 The screen returns to home automatically after 10 seconds. Show an order reference (`DGO-XXXX-XXXX`).
 
@@ -264,10 +260,10 @@ For backend-driven states (cancelling, pending downgrade), use Stripe **test mod
 | 6 | ZC · SUB | Account → Cancel → 3 steps | ENDS SOON, "Access until …", pending downgrade cleared |
 | 7 | ZC · cancelling | Resume auto-renewal | ACTIVE again |
 | 8 | ZC · cancelling | Manage → pick a new plan | Note "Renewal is off…", renewal back on after |
-| 9 | NP · SUB (Mobile 3M) | Add time → Plus 3M | Due रू250; access date unchanged |
-| 10 | NP · SUB (Mobile 3M) | Add time → Mobile 12M | Full price; 12 months added after the current end date |
-| 11 | NP · SUB (Plus 12M) | Add time → Mobile 3M | "After this term", disabled |
-| 12 | NP · SUB | Account | No cancel option; only "Add time or upgrade" |
+| 9 | NP · SUB (Mobile 3M) | Browse plans, select Plus, tap Continue | All cards and durations visible; active-plan popup appears with email/social support guidance; no payment |
+| 10 | NP · SUB | Open checkout outside manage mode | Another subscription purchase is blocked |
+| 11 | NP · expired | Open checkout and select a plan | New purchase allowed at full offer price; fresh access term |
+| 12 | NP · SUB | Account | Browse plans, access end date and Contact support shown; no add-time or upgrade action |
 | 13 | NP · OFF | Pay with GetPay, card `4000 0000 0000 0002` | "Card declined. Try another." |
 
 ---

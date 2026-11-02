@@ -28,10 +28,16 @@ import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -62,6 +68,8 @@ import com.dgo.checkout.data.savingsVsMonthly
 import com.dgo.checkout.data.offerSavings
 import com.dgo.checkout.ui.CheckoutViewModel
 import com.dgo.checkout.ui.components.BrandButton
+import com.dgo.checkout.ui.components.NepalPlanNotice
+import com.dgo.checkout.data.formatRenewalDate
 import com.dgo.checkout.ui.theme.BrandGradient
 import com.dgo.checkout.ui.theme.BrandPurple
 import com.dgo.checkout.ui.theme.Emerald
@@ -74,7 +82,20 @@ import kotlinx.coroutines.launch
 fun ChoosePlanScreen(vm: CheckoutViewModel) {
     val selected = vm.sku
     val change = vm.planChange
-    val selectedCurrent = vm.manageMode && selected != null && vm.session?.skuId == selected.id
+    val selectedCurrent = (vm.manageMode || vm.nepalPlanLocked) && selected != null && vm.session?.skuId == selected.id
+    var showNepalNotice by rememberSaveable(vm.region, vm.session?.skuId) { mutableStateOf(false) }
+
+    if (showNepalNotice) {
+        AlertDialog(
+            onDismissRequest = { showNepalNotice = false },
+            title = { Text("You have an active plan") },
+            text = { NepalPlanNotice() },
+            confirmButton = {
+                TextButton(onClick = { showNepalNotice = false }) { Text("Keep browsing") }
+            },
+            containerColor = com.dgo.checkout.ui.theme.Ink,
+        )
+    }
 
     Column(Modifier.fillMaxSize()) {
         Column(
@@ -105,8 +126,9 @@ fun ChoosePlanScreen(vm: CheckoutViewModel) {
             Spacer(Modifier.height(14.dp))
             Text(
                 when {
+                    vm.nepalPlanLocked -> "Explore plans"
                     vm.manageMode && vm.session != null -> "Change your plan"
-                    vm.manageMode -> "Add time or upgrade"
+                    vm.manageMode -> "Choose your plan"
                     else -> "Choose your plan"
                 },
                 color = White,
@@ -116,7 +138,7 @@ fun ChoosePlanScreen(vm: CheckoutViewModel) {
                 lineHeight = 38.sp,
             )
             Spacer(Modifier.height(8.dp))
-            if (vm.manageMode && vm.session != null) {
+            if ((vm.manageMode || vm.nepalPlanLocked) && vm.session != null) {
                 Text(
                     "Current: ${TIER_META.getValue(vm.session!!.tier).name} · ${vm.session!!.duration.label()}",
                     color = White.copy(0.50f),
@@ -156,7 +178,11 @@ fun ChoosePlanScreen(vm: CheckoutViewModel) {
                 ) {
                     Icon(Icons.Outlined.Info, null, tint = BrandPurple, modifier = Modifier.size(16.dp))
                     Spacer(Modifier.width(10.dp))
-                    Text(lifecycleNote(vm.session!!, change), color = White.copy(0.50f), fontSize = 12.sp, lineHeight = 18.sp)
+                    Text(
+                        if (vm.nepalPlanLocked) "Your current plan is active until ${formatRenewalDate(vm.session!!.paidThrough)}."
+                        else lifecycleNote(vm.session!!, change),
+                        color = White.copy(0.50f), fontSize = 12.sp, lineHeight = 18.sp,
+                    )
                 }
             }
         }
@@ -184,11 +210,12 @@ fun ChoosePlanScreen(vm: CheckoutViewModel) {
                 )
                 Text(
                     selected?.let { sku ->
+                        if (vm.nepalPlanLocked) return@let "${sku.duration.label()} · ${formatMoney(sku.price, sku.currency)}"
                         val due = dueTodayCaption(change, vm.amount, sku.currency)
                         val showDue = change?.kind in setOf(
                             PlanChangeKind.PROVIDER_UPGRADE,
                             PlanChangeKind.PROVIDER_DOWNGRADE,
-                            PlanChangeKind.DEFERRED,
+                            PlanChangeKind.SUPPORT_REQUIRED,
                             PlanChangeKind.CURRENT,
                         )
                         if (showDue) "${sku.duration.label()} · $due" else "${sku.duration.label()} · ${formatMoney(vm.amount, sku.currency)}"
@@ -198,9 +225,11 @@ fun ChoosePlanScreen(vm: CheckoutViewModel) {
                 )
             }
             BrandButton(
-                label = planActionLabel(change, selectedCurrent),
-                onClick = vm::nextFromPlan,
-                enabled = vm.canAdvanceFromPlan,
+                label = if (vm.nepalPlanLocked && !selectedCurrent) "Continue" else planActionLabel(change, selectedCurrent),
+                onClick = {
+                    if (vm.nepalPlanLocked) showNepalNotice = true else vm.nextFromPlan()
+                },
+                enabled = if (vm.nepalPlanLocked) !selectedCurrent else vm.canAdvanceFromPlan,
             )
         }
     }
@@ -346,20 +375,19 @@ private fun TierCard(
 ) {
     val meta = TIER_META.getValue(id)
     val row = Catalog.findSku(vm.region, id, vm.duration)
-    val currentPlan = vm.manageMode && row != null && vm.session?.skuId == row.id
+    val currentPlan = (vm.manageMode || vm.nepalPlanLocked) && row != null && vm.session?.skuId == row.id
     val rowChange = resolvePlanChange(vm.session, row, vm.manageMode)
-    val save = if (row != null && rowChange?.kind != PlanChangeKind.FIXED_TIER_UPGRADE && rowChange?.kind != PlanChangeKind.DEFERRED) {
+    val save = if (row != null) {
         offerSavings(vm.region, id, vm.duration)
     } else null
     val compareAt = if (save != null) compareAtPrice(vm.region, id, vm.duration) else 0.0
     val displayAmount = when {
         row == null -> 0.0
-        rowChange?.kind == PlanChangeKind.FIXED_TIER_UPGRADE -> rowChange.amount
         else -> row.price
     }
     val accent = Color(meta.accent)
     val shape = RoundedCornerShape(28.dp)
-    val state = planStateLabel(rowChange?.kind)
+    val state = if (vm.nepalPlanLocked) null else planStateLabel(rowChange?.kind)
     Column(
         Modifier
             .fillMaxWidth()
@@ -422,12 +450,8 @@ private fun TierCard(
         }
         Text(
             when (rowChange?.kind) {
-                PlanChangeKind.FIXED_TIER_UPGRADE -> "Pay the difference · same end date"
                 PlanChangeKind.PROVIDER_UPGRADE -> "Starts now · pay only the difference"
                 PlanChangeKind.PROVIDER_DOWNGRADE -> "Starts next bill · \$0 today"
-                PlanChangeKind.DEFERRED -> "After your current term"
-                PlanChangeKind.RENEWAL -> "+${vm.duration.label()} after this term"
-                PlanChangeKind.IMMEDIATE_EXTENSION -> "Added after this term"
                 else -> listOfNotNull(
                     row?.takeIf { it.duration != PlanDuration.M01 }?.let { formatMonthlyRate(it) },
                     billingCadenceLabel(vm.duration, vm.region),

@@ -1,65 +1,55 @@
 package com.dgo.checkout.data
 
+import java.time.Instant
+
+const val NEPAL_ACTIVE_PLAN_MESSAGE = "You already have an active subscription. Another plan cannot be purchased until your current plan ends. For upgrade-related queries, please contact customer support by email or through our official social channels."
+
+fun SubscriptionSession.hasActiveNepalPlan(now: Instant = Instant.now()): Boolean =
+    region == PriceRegion.NEPAL && runCatching { Instant.parse(paidThrough).isAfter(now) }.getOrDefault(true)
+
 fun resolvePlanChange(
     current: SubscriptionSession?,
     target: SubscriptionSku?,
     manageMode: Boolean,
 ): PlanChange? {
     if (target == null) return null
-    if (!manageMode || current == null || current.region != target.region) {
+    if (target.region == PriceRegion.NEPAL && current?.hasActiveNepalPlan() == true) {
+        return PlanChange(
+            if (current.skuId == target.id) PlanChangeKind.CURRENT else PlanChangeKind.SUPPORT_REQUIRED,
+            amount = 0.0,
+            allowed = false,
+        )
+    }
+    if (!manageMode || current == null || current.region != target.region || target.region == PriceRegion.NEPAL) {
         return PlanChange(PlanChangeKind.NEW, target.price, allowed = true)
     }
     if (current.skuId == target.id) {
-        return if (current.billingMode == BillingMode.RECURRING) {
-            PlanChange(PlanChangeKind.CURRENT, target.price, allowed = false)
-        } else {
-            PlanChange(PlanChangeKind.RENEWAL, target.price, allowed = true)
-        }
+        return PlanChange(PlanChangeKind.CURRENT, target.price, allowed = false)
     }
-    if (current.billingMode == BillingMode.RECURRING) {
-        val downgrade =
-            (current.tier == PlanTier.PLUS && target.tier == PlanTier.MOBILE) ||
-                target.duration.months() < current.duration.months()
-        return PlanChange(
-            kind = if (downgrade) PlanChangeKind.PROVIDER_DOWNGRADE else PlanChangeKind.PROVIDER_UPGRADE,
-            amount = target.price,
-            allowed = true,
-            intervalChange = target.duration != current.duration,
-        )
-    }
-
-    val currentMonths = current.duration.months()
-    val targetMonths = target.duration.months()
-    if (targetMonths < currentMonths || (current.tier == PlanTier.PLUS && target.tier == PlanTier.MOBILE)) {
-        return PlanChange(PlanChangeKind.DEFERRED, target.price, allowed = false)
-    }
-    if (current.tier == PlanTier.MOBILE && target.tier == PlanTier.PLUS && current.duration == target.duration) {
-        val currentSku = Catalog.findSku(current.region, current.tier, current.duration)
-        val fee = (target.price - (currentSku?.price ?: 0.0)).coerceAtLeast(0.0)
-        return PlanChange(PlanChangeKind.FIXED_TIER_UPGRADE, fee, allowed = true)
-    }
-    if (targetMonths > currentMonths) {
-        return PlanChange(PlanChangeKind.IMMEDIATE_EXTENSION, target.price, allowed = true)
-    }
-    return PlanChange(PlanChangeKind.DEFERRED, target.price, allowed = false)
+    val downgrade =
+        (current.tier == PlanTier.PLUS && target.tier == PlanTier.MOBILE) ||
+            target.duration.months() < current.duration.months()
+    return PlanChange(
+        kind = if (downgrade) PlanChangeKind.PROVIDER_DOWNGRADE else PlanChangeKind.PROVIDER_UPGRADE,
+        amount = target.price,
+        allowed = true,
+        intervalChange = target.duration != current.duration,
+    )
 }
 
 fun planActionLabel(change: PlanChange?, currentPlan: Boolean): String = when (change?.kind) {
     PlanChangeKind.CURRENT -> "Current plan"
-    PlanChangeKind.FIXED_TIER_UPGRADE, PlanChangeKind.PROVIDER_UPGRADE -> "Upgrade"
+    PlanChangeKind.SUPPORT_REQUIRED -> "Plan unavailable"
+    PlanChangeKind.PROVIDER_UPGRADE -> "Upgrade"
     PlanChangeKind.PROVIDER_DOWNGRADE -> "Schedule downgrade"
-    PlanChangeKind.DEFERRED -> "After this term"
-    PlanChangeKind.RENEWAL, PlanChangeKind.IMMEDIATE_EXTENSION -> "Add time"
-    else -> if (currentPlan) "Add time" else "Continue"
+    else -> if (currentPlan) "Current plan" else "Continue"
 }
 
 fun planStateLabel(kind: PlanChangeKind?): String? = when (kind) {
     PlanChangeKind.CURRENT -> "Current plan"
-    PlanChangeKind.FIXED_TIER_UPGRADE, PlanChangeKind.PROVIDER_UPGRADE -> "Upgrade"
+    PlanChangeKind.SUPPORT_REQUIRED -> "Plan unavailable"
+    PlanChangeKind.PROVIDER_UPGRADE -> "Upgrade"
     PlanChangeKind.PROVIDER_DOWNGRADE -> "Downgrade"
-    PlanChangeKind.DEFERRED -> "After this term"
-    PlanChangeKind.RENEWAL -> "Add time"
-    PlanChangeKind.IMMEDIATE_EXTENSION -> "Longer term"
     else -> null
 }
 
@@ -68,17 +58,12 @@ fun dueTodayCaption(change: PlanChange?, amount: Double, currency: Currency): St
     PlanChangeKind.PROVIDER_DOWNGRADE -> "No charge today"
     PlanChangeKind.PROVIDER_UPGRADE -> "Price difference"
     PlanChangeKind.CURRENT -> "Current plan"
-    PlanChangeKind.DEFERRED -> "Not available yet"
+    PlanChangeKind.SUPPORT_REQUIRED -> "Plan unavailable"
     else -> formatMoney(amount, currency)
 }
 
-fun lifecycleNote(
-    current: SubscriptionSession,
-    change: PlanChange?,
-): String = when (change?.kind) {
-    PlanChangeKind.FIXED_TIER_UPGRADE -> "Plus now. Still ends ${formatRenewalDate(current.paidThrough)}."
-    PlanChangeKind.IMMEDIATE_EXTENSION -> "Added after ${formatRenewalDate(current.paidThrough)}. No auto-renew."
-    PlanChangeKind.DEFERRED -> "Available after ${formatRenewalDate(current.paidThrough)}."
+fun lifecycleNote(current: SubscriptionSession, change: PlanChange?): String = when (change?.kind) {
+    PlanChangeKind.SUPPORT_REQUIRED -> NEPAL_ACTIVE_PLAN_MESSAGE
     PlanChangeKind.PROVIDER_DOWNGRADE -> "Switches on ${formatRenewalDate(current.nextBillingDate ?: current.paidThrough)}. No charge today."
     PlanChangeKind.PROVIDER_UPGRADE -> if (change.intervalChange) {
         "Starts now. A new billing period begins today, minus credit for unused time. Stripe shows the exact amount."

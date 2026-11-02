@@ -134,6 +134,7 @@ private fun CheckoutHeader(vm: CheckoutViewModel) {
                 when (vm.step) {
                     0 -> when {
                         vm.buyingEvent -> "Exclusive"
+                        vm.nepalPlanLocked -> "Explore plans"
                         vm.manageMode -> "Change plan"
                         else -> "Choose a plan"
                     }

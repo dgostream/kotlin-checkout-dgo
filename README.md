@@ -9,7 +9,8 @@ The app opens on a mobile landing (home, JioHotstar, OSR, sports, entertainment,
 - Plan picker with the same duration tabs (1 / 3 / 12 months) and Mobile / Plus cards
 - Nepal wallet accordion (Khalti, eSewa, ConnectIPS, Fonepay, GetPay)
 - Stripe-only checkout for international zones: a hand-off to hosted Stripe Checkout (WebView), no card entry in the app
-- Plan changes (upgrade, downgrade, renewal, extension) and Stripe cancel / resume on the Account screen
+- Stripe plan changes (upgrade, downgrade) and cancel / resume on the Account screen
+- Nepal active subscriptions show Current plan and customer support guidance; another subscription can be purchased after expiry
 - Confirmation screen, then a subscribed home
 - Prototype coupons `DGO10` / `DGO20` on Nepal checkout
 - Regional Nepal / international terms (November 2026), readable from Home, Account and checkout; explicit consent required before payment

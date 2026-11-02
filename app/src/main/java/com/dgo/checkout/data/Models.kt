@@ -77,12 +77,9 @@ data class AppliedCoupon(val code: String, val percent: Int)
 enum class PlanChangeKind {
     NEW,
     CURRENT,
-    RENEWAL,
-    FIXED_TIER_UPGRADE,
-    IMMEDIATE_EXTENSION,
+    SUPPORT_REQUIRED,
     PROVIDER_UPGRADE,
     PROVIDER_DOWNGRADE,
-    DEFERRED,
 }
 
 data class PlanChange(

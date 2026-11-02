@@ -34,7 +34,6 @@ import androidx.compose.material.icons.outlined.HelpOutline
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Language
 import androidx.compose.material.icons.outlined.LiveTv
-import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
@@ -61,6 +60,7 @@ import com.dgo.checkout.ui.CheckoutViewModel
 import com.dgo.checkout.ui.components.BrandButton
 import com.dgo.checkout.ui.components.GhostField
 import com.dgo.checkout.ui.components.TermsLink
+import com.dgo.checkout.ui.components.NepalPlanNotice
 import com.dgo.checkout.ui.theme.BrandPurple
 import com.dgo.checkout.ui.theme.Danger
 import com.dgo.checkout.ui.theme.Emerald
@@ -309,11 +309,11 @@ private fun PlanDetails(vm: CheckoutViewModel) {
         when {
             session.billingMode == BillingMode.PREPAID -> {
                 BrandButton(
-                    "Add time or upgrade",
+                    "Browse plans",
                     onClick = { vm.openCheckout(true) },
                     modifier = Modifier.fillMaxWidth(),
-                    leading = { Icon(Icons.Outlined.Refresh, null, tint = White, modifier = Modifier.size(14.dp)) },
                 )
+                NepalPlanNotice()
             }
             session.status == SessionStatus.CANCELING && vm.confirmResume -> {
                 Column(

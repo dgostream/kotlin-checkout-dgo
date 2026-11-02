@@ -29,6 +29,8 @@ import com.dgo.checkout.data.SubscriptionSku
 import com.dgo.checkout.data.applyCouponAmount
 import com.dgo.checkout.data.resolvePlanChange
 import com.dgo.checkout.data.Terms
+import com.dgo.checkout.data.hasActiveNepalPlan
+import com.dgo.checkout.data.NEPAL_ACTIVE_PLAN_MESSAGE
 
 class CheckoutViewModel(application: Application) : AndroidViewModel(application) {
     private val repo = SessionRepository(application)
@@ -86,6 +88,9 @@ class CheckoutViewModel(application: Application) : AndroidViewModel(application
 
     val buyingEvent: Boolean
         get() = exclusiveEnabled && catalogTab == CatalogTab.EXCLUSIVE
+
+    val nepalPlanLocked: Boolean
+        get() = !region.stripe && session?.hasActiveNepalPlan() == true
 
     val event: EventPass?
         get() = Events.find(eventKey)
@@ -284,6 +289,11 @@ class CheckoutViewModel(application: Application) : AndroidViewModel(application
 
     fun submitNepalPayment(): Boolean {
         paymentError = null
+        if (!buyingEvent && nepalPlanLocked) {
+            paymentError = NEPAL_ACTIVE_PLAN_MESSAGE
+            return false
+        }
+        if (!canAdvanceFromPlan) return false
         if (!requireTermsConsent()) return false
         val method = nepalPsp
         if (method == null) {
@@ -317,6 +327,7 @@ class CheckoutViewModel(application: Application) : AndroidViewModel(application
      */
     fun submitStripePayment(): Boolean {
         paymentError = null
+        if (!canAdvanceFromPlan) return false
         if (!requireTermsConsent()) return false
         if (planChange?.kind != PlanChangeKind.NEW) coupon = null
         lastPaymentLabel = "Stripe Checkout"

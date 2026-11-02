@@ -258,7 +258,7 @@ private fun SubscribeDrive(vm: CheckoutViewModel) {
             Text(session.duration.label(), color = White.copy(0.45f), fontSize = 13.sp)
             Spacer(Modifier.height(12.dp))
             BrandButton(
-                label = if (session.billingMode == com.dgo.checkout.data.BillingMode.RECURRING) "Manage plan" else "Add time or upgrade",
+                label = if (session.billingMode == com.dgo.checkout.data.BillingMode.RECURRING) "Manage plan" else "Browse plans",
                 onClick = { vm.openCheckout(true) },
                 modifier = Modifier.fillMaxWidth(),
             )

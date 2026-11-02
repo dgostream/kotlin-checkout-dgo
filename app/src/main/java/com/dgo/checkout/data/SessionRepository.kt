@@ -2,7 +2,6 @@ package com.dgo.checkout.data
 
 import android.content.Context
 import org.json.JSONObject
-import java.time.Instant
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 
@@ -20,7 +19,9 @@ class SessionRepository(context: Context) {
 
     fun getSession(): SubscriptionSession? {
         val raw = prefs.getString(KEY_SESSION, null) ?: return null
-        return runCatching { parseSession(raw) }.getOrNull()
+        return runCatching { parseSession(raw) }.getOrNull()?.takeUnless {
+            it.region == PriceRegion.NEPAL && !it.hasActiveNepalPlan()
+        }
     }
 
     fun cancelAtPeriodEnd() {
@@ -65,6 +66,9 @@ class SessionRepository(context: Context) {
         current: SubscriptionSession?,
         kind: PlanChangeKind,
     ) {
+        check(sku.region != PriceRegion.NEPAL || current?.hasActiveNepalPlan() != true) {
+            NEPAL_ACTIVE_PLAN_MESSAGE
+        }
         if (current?.billingMode == BillingMode.RECURRING && kind == PlanChangeKind.PROVIDER_DOWNGRADE) {
             setSession(
                 current.copy(
@@ -81,11 +85,6 @@ class SessionRepository(context: Context) {
         }
         val next = sessionFromSku(sku)
         val updated = when {
-            current?.billingMode == BillingMode.PREPAID && kind == PlanChangeKind.FIXED_TIER_UPGRADE ->
-                next.copy(paidThrough = current.paidThrough, nextBillingDate = null)
-            current?.billingMode == BillingMode.PREPAID &&
-                kind in setOf(PlanChangeKind.RENEWAL, PlanChangeKind.IMMEDIATE_EXTENSION) ->
-                next.copy(paidThrough = addMonthsToIso(current.paidThrough, sku.duration.months()))
             current?.billingMode == BillingMode.RECURRING && kind == PlanChangeKind.PROVIDER_UPGRADE &&
                 current.duration == sku.duration ->
                 next.copy(
@@ -188,10 +187,5 @@ class SessionRepository(context: Context) {
             return ZonedDateTime.now(ZoneOffset.UTC).plusMonths(months.toLong()).toInstant().toString()
         }
 
-        fun addMonthsToIso(value: String, months: Int): String {
-            return runCatching {
-                Instant.parse(value).atZone(ZoneOffset.UTC).plusMonths(months.toLong()).toInstant().toString()
-            }.getOrElse { addUtcMonths(months) }
-        }
     }
 }

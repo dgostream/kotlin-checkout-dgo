@@ -69,8 +69,7 @@ fun ConfirmationScreen(vm: CheckoutViewModel) {
     val title = when {
         pass != null -> "Pass unlocked"
         kind == PlanChangeKind.PROVIDER_DOWNGRADE -> "Plan change scheduled"
-        kind == PlanChangeKind.PROVIDER_UPGRADE || kind == PlanChangeKind.FIXED_TIER_UPGRADE -> "Plan updated"
-        kind == PlanChangeKind.RENEWAL || kind == PlanChangeKind.IMMEDIATE_EXTENSION -> "Time added"
+        kind == PlanChangeKind.PROVIDER_UPGRADE -> "Plan updated"
         else -> "You're in"
     }
     val detail = when {
@@ -167,10 +166,8 @@ fun ConfirmationScreen(vm: CheckoutViewModel) {
                     ConfirmRow(
                         if (sku.region == com.dgo.checkout.data.PriceRegion.NEPAL) "Access" else "Schedule",
                         when (kind) {
-                            PlanChangeKind.FIXED_TIER_UPGRADE -> "Access date unchanged"
                             PlanChangeKind.PROVIDER_DOWNGRADE -> "Starts on the next bill"
                             PlanChangeKind.PROVIDER_UPGRADE -> "Next bill ${formatRenewalDate(vm.session?.nextBillingDate)}"
-                            PlanChangeKind.RENEWAL, PlanChangeKind.IMMEDIATE_EXTENSION -> "${sku.duration.label()} added after this term"
                             else -> if (sku.region == com.dgo.checkout.data.PriceRegion.NEPAL) {
                                 "${sku.duration.label()} of access"
                             } else {
