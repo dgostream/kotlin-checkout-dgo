@@ -59,6 +59,7 @@ import com.dgo.checkout.data.label
 import com.dgo.checkout.ui.CheckoutViewModel
 import com.dgo.checkout.ui.components.BrandButton
 import com.dgo.checkout.ui.components.GhostField
+import com.dgo.checkout.ui.components.PrivacyLink
 import com.dgo.checkout.ui.components.TermsLink
 import com.dgo.checkout.ui.components.NepalPlanNotice
 import com.dgo.checkout.ui.theme.BrandPurple
@@ -183,6 +184,7 @@ fun AccountScreen(vm: CheckoutViewModel) {
             MenuRow(Icons.Outlined.HelpOutline, "Help") { vm.accountNotice = "Help centre is in the full app." }
             MenuRow(Icons.Outlined.Info, "About") { vm.accountNotice = "DGO checkout prototype · entitlement spec v3.0." }
             TermsLink(vm.region.stripe, label = "Terms & Conditions")
+            PrivacyLink()
         }
 
         vm.accountNotice?.let {

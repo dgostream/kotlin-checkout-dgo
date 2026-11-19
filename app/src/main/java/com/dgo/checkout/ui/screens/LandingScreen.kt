@@ -89,7 +89,12 @@ fun LandingScreen(vm: CheckoutViewModel) {
                 tab.rails.forEach { rail ->
                     item { RailBlock(rail.title, tab.color, rail.items) { vm.detail = it } }
                 }
-                item { com.dgo.checkout.ui.components.TermsLink(vm.region.stripe, label = "Terms & Conditions") }
+                item {
+                    Row {
+                        com.dgo.checkout.ui.components.TermsLink(vm.region.stripe, label = "Terms & Conditions")
+                        com.dgo.checkout.ui.components.PrivacyLink()
+                    }
+                }
                 item { FooterNote() }
             }
         }

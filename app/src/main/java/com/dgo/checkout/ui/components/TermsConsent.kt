@@ -18,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -45,7 +46,18 @@ fun TermsConsent(vm: CheckoutViewModel) {
             Spacer(Modifier.width(10.dp))
             Text(document.acknowledgement, color = White.copy(0.75f), fontSize = 12.sp, lineHeight = 18.sp)
         }
-        TermsLink(vm.region.stripe)
+        Row {
+            TermsLink(vm.region.stripe)
+            PrivacyLink()
+        }
+    }
+}
+
+@Composable
+fun PrivacyLink(label: String = "Privacy Policy") {
+    val uriHandler = LocalUriHandler.current
+    TextButton(onClick = { uriHandler.openUri(Terms.PRIVACY_POLICY_URL) }) {
+        Text(label, color = StripePurple, fontSize = 12.sp)
     }
 }
 
@@ -105,7 +117,7 @@ private fun TermsReader(initialInternational: Boolean, onDismiss: () -> Unit) {
                     Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = 22.dp, vertical = 24.dp)) {
                         Text(if (international) "International subscription" else "Nepal subscription", color = White, fontSize = 25.sp, lineHeight = 31.sp, fontWeight = FontWeight.Bold, letterSpacing = (-0.5).sp)
                         Spacer(Modifier.height(12.dp))
-                        Text("Effective November 2026", color = TermsAccent, fontSize = 12.sp, lineHeight = 18.sp, fontWeight = FontWeight.Medium)
+                        Text(document.effective, color = TermsAccent, fontSize = 12.sp, lineHeight = 18.sp, fontWeight = FontWeight.Medium)
                         Spacer(Modifier.height(6.dp))
                         Text(document.scope, color = White.copy(0.55f), fontSize = 12.sp, lineHeight = 19.sp)
                         Spacer(Modifier.height(20.dp))
@@ -120,12 +132,12 @@ private fun TermsReader(initialInternational: Boolean, onDismiss: () -> Unit) {
                                 }
                                 Spacer(Modifier.width(10.dp))
                                 Text(
-                                    if (index == document.sections.lastIndex) "Subscriber acknowledgement" else section.title.substringAfter(". "),
+                                    section.title.substringAfter(". "),
                                     color = White, fontSize = 16.sp, lineHeight = 23.sp, fontWeight = FontWeight.SemiBold,
                                     modifier = Modifier.weight(1f),
                                 )
                             }
-                            section.body.split(Regex("\\s+(?=\\d+\\.\\d+\\s|•\\s)")).forEach { paragraph ->
+                            Terms.paragraphs(section.body).forEach { paragraph ->
                                 Spacer(Modifier.height(12.dp))
                                 Row {
                                     if (paragraph.startsWith("•")) {
@@ -139,6 +151,8 @@ private fun TermsReader(initialInternational: Boolean, onDismiss: () -> Unit) {
                         Text("Questions about your subscription?", color = White.copy(0.60f), fontSize = 13.sp, lineHeight = 20.sp)
                         Text("Contact us through our official social channels or email.", color = White.copy(0.60f), fontSize = 13.sp, lineHeight = 20.sp)
                         Text("support@watchdgo.com", color = TermsAccent, fontSize = 13.sp, lineHeight = 20.sp)
+                        Spacer(Modifier.height(8.dp))
+                        PrivacyLink("Read our Privacy Policy")
                     }
                 }
                 HorizontalDivider(color = White.copy(0.08f))
